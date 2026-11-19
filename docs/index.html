@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>DataCleanPro — Smart Data Cleaning</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --ink:#0f172a;--ink2:#334155;--ink3:#64748b;--ink4:#94a3b8;
+  --indigo:#3730a3;--indigo-mid:#4f46e5;--indigo-lt:#eef2ff;
+  --indigo-btn:#4f46e5;
+  --green:#166534;--green-lt:#dcfce7;
+  --amber:#92400e;--amber-lt:#fef3c7;
+  --red:#991b1b;--red-lt:#fee2e2;
+  --sky:#0369a1;--sky-lt:#e0f2fe;
+  --purple:#6b21a8;--purple-lt:#f3e8ff;
+  --border:#e2e8f0;--border2:#cbd5e1;
+  --bg:#f8fafc;--surface:#ffffff;
+  --radius:12px;--radius-lg:18px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --ink:#f1f5f9;--ink2:#cbd5e1;--ink3:#94a3b8;--ink4:#64748b;
+    --indigo:#818cf8;--indigo-mid:#818cf8;--indigo-lt:#1e1b4b;
+    --indigo-btn:#6366f1;
+    --green:#86efac;--green-lt:#14532d;
+    --amber:#fcd34d;--amber-lt:#451a03;
+    --red:#fca5a5;--red-lt:#450a0a;
+    --sky:#7dd3fc;--sky-lt:#082f49;
+    --purple:#c084fc;--purple-lt:#3b0764;
+    --border:#1e293b;--border2:#334155;
+    --bg:#0f172a;--surface:#1e293b;
+  }
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:100;background:rgba(15,23,42,.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.06);padding:0 40px;height:58px;display:flex;align-items:center;gap:0;}
+.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;margin-right:auto;}
+.nav-logo{width:34px;height:34px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.nav-logo svg{width:18px;height:18px;fill:white;}
+.nav-wordmark{color:white;font-weight:800;font-size:.95rem;letter-spacing:-.3px;}
+.nav-wordmark span{opacity:.4;font-weight:300;}
+.nav-links{display:flex;gap:2px;}
+.nav-links a{color:rgba(255,255,255,.55);text-decoration:none;padding:6px 14px;border-radius:8px;font-size:.82rem;font-weight:500;transition:all .15s;}
+.nav-links a:hover{color:white;background:rgba(255,255,255,.08);}
+.nav-cta{display:inline-flex;align-items:center;gap:6px;background:#4f46e5;color:white;padding:7px 16px;border-radius:8px;font-size:.82rem;font-weight:600;text-decoration:none;margin-left:20px;transition:all .15s;}
+.nav-cta:hover{background:#4338ca;}
+.nav-cta svg{width:14px;height:14px;fill:currentColor;}
+@media(max-width:680px){.nav-links{display:none;}}
+
+/* ── HERO ── */
+.hero{padding:100px 40px 90px;text-align:center;background:linear-gradient(160deg,#0f172a 0%,#1e1b4b 50%,#1e3a5f 100%);position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background-image:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(99,102,241,.25),transparent);pointer-events:none;}
+.hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(99,102,241,.4),transparent);pointer-events:none;}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:7px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);border-radius:20px;padding:5px 14px;color:#a5b4fc;font-size:.73rem;font-weight:600;letter-spacing:.6px;text-transform:uppercase;margin-bottom:28px;position:relative;z-index:2;}
+.hero-eyebrow span{width:6px;height:6px;border-radius:50%;background:#818cf8;}
+.hero h1{font-size:clamp(2.2rem,5vw,3.6rem);font-weight:900;color:white;letter-spacing:-.04em;line-height:1.05;margin-bottom:20px;position:relative;z-index:2;}
+.hero h1 .dim{color:rgba(255,255,255,.35);font-weight:300;}
+.hero h1 .accent{background:linear-gradient(90deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-sub{color:rgba(255,255,255,.55);font-size:1.05rem;max-width:540px;margin:0 auto 40px;line-height:1.65;position:relative;z-index:2;}
+.hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:60px;position:relative;z-index:2;}
+.btn-hero-primary{display:inline-flex;align-items:center;gap:8px;background:white;color:#1e1b4b;padding:14px 28px;border-radius:10px;font-weight:700;font-size:.92rem;text-decoration:none;transition:all .2s;box-shadow:0 4px 24px rgba(0,0,0,.3);cursor:pointer;}
+.btn-hero-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.4);}
+.btn-hero-primary svg{width:16px;height:16px;fill:currentColor;}
+.btn-hero-secondary{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.85);padding:14px 28px;border-radius:10px;font-weight:600;font-size:.92rem;text-decoration:none;border:1px solid rgba(255,255,255,.12);transition:all .2s;cursor:pointer;}
+.btn-hero-secondary:hover{background:rgba(255,255,255,.12);}
+.btn-hero-secondary svg{width:16px;height:16px;fill:currentColor;}
+
+/* hero badges */
+.hero-badges{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;position:relative;z-index:2;}
+.hbadge{display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.45);font-size:.75rem;}
+.hbadge svg{width:14px;height:14px;fill:rgba(255,255,255,.3);}
+
+/* ── APP PREVIEW ── */
+.preview-wrap{max-width:900px;margin:0 auto;padding:0 40px;transform:translateY(-40px);position:relative;z-index:1;}
+.preview-frame{background:#1e293b;border-radius:16px;border:1px solid rgba(255,255,255,.08);overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.5);}
+.preview-bar{height:40px;background:#0f172a;display:flex;align-items:center;padding:0 16px;gap:8px;border-bottom:1px solid rgba(255,255,255,.06);}
+.preview-dot{width:10px;height:10px;border-radius:50%;}
+.preview-url{flex:1;background:rgba(255,255,255,.05);border-radius:6px;height:22px;margin:0 12px;display:flex;align-items:center;padding:0 10px;gap:6px;}
+.preview-url svg{width:10px;height:10px;fill:rgba(255,255,255,.25);}
+.preview-url span{color:rgba(255,255,255,.3);font-size:.68rem;font-family:monospace;}
+.preview-inner{display:flex;height:420px;}
+.preview-sidebar{width:180px;flex-shrink:0;background:#0f172a;border-right:1px solid rgba(255,255,255,.06);padding:16px 10px;}
+.ps-logo{display:flex;align-items:center;gap:8px;padding:0 8px 16px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:16px;}
+.ps-logo-icon{width:28px;height:28px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:7px;display:flex;align-items:center;justify-content:center;}
+.ps-logo-icon svg{width:14px;height:14px;fill:white;}
+.ps-logo span{color:white;font-weight:700;font-size:.82rem;}
+.ps-nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;margin-bottom:2px;font-size:.75rem;cursor:default;}
+.ps-nav-item.active{background:rgba(99,102,241,.2);color:#818cf8;}
+.ps-nav-item:not(.active){color:rgba(255,255,255,.35);}
+.ps-nav-item svg{width:14px;height:14px;fill:currentColor;}
+.ps-status{position:absolute;bottom:14px;left:10px;right:10px;background:rgba(0,0,0,.3);border-radius:7px;padding:8px 10px;display:flex;align-items:center;gap:6px;}
+.ps-dot{width:6px;height:6px;border-radius:50%;background:#34d399;box-shadow:0 0 6px #34d39988;flex-shrink:0;}
+.ps-status-text{font-size:.62rem;color:rgba(255,255,255,.5);}
+.preview-content{flex:1;padding:20px;overflow:hidden;position:relative;}
+.pc-title{color:white;font-weight:700;font-size:.88rem;margin-bottom:14px;}
+.pc-upload{border:1.5px dashed rgba(99,102,241,.4);border-radius:10px;padding:20px;text-align:center;margin-bottom:14px;background:rgba(99,102,241,.05);}
+.pc-upload-icon{color:#818cf8;font-size:1.4rem;margin-bottom:6px;}
+.pc-upload-text{color:rgba(255,255,255,.5);font-size:.72rem;}
+.pc-btn{background:#4f46e5;color:white;border:none;padding:8px 20px;border-radius:7px;font-size:.75rem;font-weight:600;cursor:default;width:100%;margin-bottom:14px;}
+.pc-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.pc-stat{background:rgba(255,255,255,.05);border-radius:8px;padding:10px 12px;border:1px solid rgba(255,255,255,.06);}
+.pc-stat-val{color:white;font-weight:700;font-size:.95rem;}
+.pc-stat-lbl{color:rgba(255,255,255,.35);font-size:.62rem;margin-top:1px;}
+
+/* ── SECTION ── */
+section{padding:80px 40px;}
+.section-label{display:inline-block;background:var(--indigo-lt);color:var(--indigo-mid);border-radius:20px;padding:4px 14px;font-size:.72rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;margin-bottom:16px;}
+.section-title{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;color:var(--ink);letter-spacing:-.03em;line-height:1.15;margin-bottom:12px;}
+.section-sub{color:var(--ink3);font-size:.95rem;max-width:540px;line-height:1.65;}
+.section-header{text-align:center;margin-bottom:56px;}
+.section-header .section-sub{margin:0 auto;}
+
+/* ── STATS STRIP ── */
+.stats-strip{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:36px 40px;}
+.stats-inner{max-width:900px;margin:0 auto;display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;}
+.stat-item{text-align:center;flex:1;min-width:120px;}
+.stat-val{font-size:2rem;font-weight:900;color:var(--indigo-mid);letter-spacing:-.03em;line-height:1;}
+.stat-lbl{font-size:.72rem;color:var(--ink4);font-weight:500;letter-spacing:.4px;margin-top:4px;text-transform:uppercase;}
+
+/* ── FEATURES ── */
+.features-grid{max-width:980px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+@media(max-width:780px){.features-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:500px){.features-grid{grid-template-columns:1fr;}}
+.feat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;transition:box-shadow .2s;}
+.feat-card:hover{box-shadow:0 8px 32px rgba(0,0,0,.08);}
+.feat-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
+.feat-icon svg{width:22px;height:22px;fill:currentColor;}
+.feat-title{font-weight:700;font-size:.92rem;color:var(--ink);margin-bottom:6px;}
+.feat-desc{font-size:.8rem;color:var(--ink3);line-height:1.6;}
+
+/* ── CLEANING OPS ── */
+.ops-section{background:var(--surface);}
+.ops-grid{max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+@media(max-width:700px){.ops-grid{grid-template-columns:1fr 1fr;}}
+.op-row{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);}
+.op-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.op-title{font-size:.82rem;font-weight:600;color:var(--ink);line-height:1.3;}
+.op-desc{font-size:.72rem;color:var(--ink3);margin-top:2px;}
+
+/* ── HOW IT WORKS ── */
+.how-section{background:linear-gradient(160deg,#0f172a,#1e1b4b);}
+.steps{max-width:860px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative;}
+.steps::before{content:'';position:absolute;top:28px;left:calc(12.5%);right:calc(12.5%);height:1px;background:linear-gradient(90deg,rgba(99,102,241,.3),rgba(99,102,241,.6),rgba(99,102,241,.3));}
+@media(max-width:600px){.steps{grid-template-columns:1fr 1fr;}.steps::before{display:none;}}
+.step{text-align:center;padding:0 12px;position:relative;}
+.step-circle{width:56px;height:56px;border-radius:50%;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;position:relative;z-index:1;}
+.step-circle svg{width:24px;height:24px;fill:#818cf8;}
+.step-num{position:absolute;top:-4px;right:-4px;width:18px;height:18px;background:#4f46e5;border-radius:50%;font-size:.6rem;font-weight:700;color:white;display:flex;align-items:center;justify-content:center;}
+.step-title{color:white;font-weight:700;font-size:.85rem;margin-bottom:6px;}
+.step-desc{color:rgba(255,255,255,.45);font-size:.75rem;line-height:1.5;}
+
+/* ── PAGES ── */
+.pages-section{background:var(--bg);}
+.pages-tabs{max-width:900px;margin:0 auto;}
+.tab-nav{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:24px;}
+.tab-btn{flex:1;padding:8px 12px;border-radius:9px;border:none;background:transparent;color:var(--ink3);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;}
+.tab-btn.active{background:var(--indigo-lt);color:var(--indigo-mid);}
+.tab-panel{display:none;}
+.tab-panel.active{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:600px){.tab-panel.active{grid-template-columns:1fr;}}
+.page-feat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;display:flex;gap:12px;}
+.page-feat-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.page-feat-icon svg{width:18px;height:18px;fill:currentColor;}
+.page-feat-title{font-size:.82rem;font-weight:600;color:var(--ink);margin-bottom:3px;}
+.page-feat-desc{font-size:.75rem;color:var(--ink3);line-height:1.5;}
+
+/* ── INSTALL ── */
+.install-section{background:var(--surface);}
+.install-grid{max-width:900px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}
+@media(max-width:680px){.install-grid{grid-template-columns:1fr;}}
+.install-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;}
+.install-card h3{font-size:.88rem;font-weight:700;color:var(--ink);margin-bottom:16px;}
+.step-row{display:flex;gap:12px;margin-bottom:14px;}
+.step-row:last-child{margin-bottom:0;}
+.step-num{width:24px;height:24px;border-radius:50%;background:var(--indigo-lt);color:var(--indigo-mid);font-size:.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-text{font-size:.82rem;color:var(--ink2);line-height:1.55;}
+.step-text code{background:var(--surface);padding:1px 6px;border-radius:4px;font-family:monospace;font-size:.75rem;color:var(--indigo-mid);}
+.code-block{background:#0f172a;border-radius:10px;padding:14px 16px;font-family:monospace;font-size:.78rem;line-height:1.7;}
+.code-comment{color:#475569;}
+.code-cmd{color:#94a3b8;}
+.code-highlight{color:#818cf8;}
+.req-list{display:flex;flex-direction:column;gap:0;}
+.req-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.req-row:last-child{border-bottom:none;}
+.req-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
+.req-name{font-weight:600;font-size:.82rem;color:var(--ink);}
+.req-ver{font-size:.72rem;color:var(--ink4);}
+.req-badge{margin-left:auto;font-size:.65rem;font-weight:600;padding:2px 8px;border-radius:5px;}
+.req-badge.required{background:var(--red-lt);color:var(--red);}
+.req-badge.optional{background:var(--amber-lt);color:var(--amber);}
+.req-badge.bundled{background:var(--green-lt);color:var(--green);}
+
+/* ── FOOTER ── */
+footer{background:#0f172a;padding:48px 40px 32px;}
+.footer-inner{max-width:900px;margin:0 auto;}
+.footer-top{display:flex;gap:48px;flex-wrap:wrap;margin-bottom:40px;}
+.footer-brand{flex:1;min-width:200px;}
+.footer-logo{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.footer-logo-icon{width:34px;height:34px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.footer-logo-icon svg{width:18px;height:18px;fill:white;}
+.footer-brand-name{color:white;font-weight:800;font-size:.95rem;}
+.footer-brand-name span{opacity:.35;font-weight:300;}
+.footer-tagline{color:rgba(255,255,255,.35);font-size:.78rem;line-height:1.5;}
+.footer-col h4{color:rgba(255,255,255,.5);font-size:.7rem;font-weight:700;letter-spacing:.7px;text-transform:uppercase;margin-bottom:14px;}
+.footer-col a{display:block;color:rgba(255,255,255,.45);text-decoration:none;font-size:.82rem;margin-bottom:8px;transition:color .15s;}
+.footer-col a:hover{color:white;}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.07);padding-top:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.footer-copy{color:rgba(255,255,255,.25);font-size:.75rem;}
+.footer-links{margin-left:auto;display:flex;gap:16px;}
+.footer-links a{color:rgba(255,255,255,.3);text-decoration:none;font-size:.75rem;transition:color .15s;}
+.footer-links a:hover{color:rgba(255,255,255,.7);}
+.tech-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;}
+.tech-tag{background:rgba(99,102,241,.12);color:#818cf8;border:1px solid rgba(99,102,241,.2);border-radius:5px;padding:2px 8px;font-size:.68rem;font-weight:500;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="#">
+    <div class="nav-logo">
+      <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+    </div>
+    <span class="nav-wordmark">DataClean<span>Pro</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="#pages">Views</a>
+    <a href="#install">Install</a>
+  </div>
+  <a class="nav-cta" href="#install">
+    <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zm7-18L5.33 9h4.84v6h3.66V9h4.84L12 2z"/></svg>
+    Get Started
+  </a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow"><span></span>Open Source · MIT License</div>
+  <h1>Smart Data Cleaning<br/><span class="dim">powered by</span> <span class="accent">AI</span></h1>
+  <p class="hero-sub">Upload CSV, Excel, TSV or JSON — DataCleanPro automatically detects and fixes quality issues. No Python required by end users.</p>
+  <div class="hero-actions">
+    <a class="btn-hero-primary" href="#install">
+      <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zm7-18L5.33 9h4.84v6h3.66V9h4.84L12 2z"/></svg>
+      Get Started
+    </a>
+    <!-- NOTE: Replace 'yourusername' below with your actual GitHub username -->
+    <a class="btn-hero-secondary" href="https://github.com/vijayendrashrimant/DataCleanPRO" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      View on GitHub
+    </a>
+  </div>
+  <div class="hero-badges">
+    <span class="hbadge"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>Blazor Server</span>
+    <span class="hbadge"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 11.5H7v-2h8v2zm3-4H7v-2h11v2z"/></svg>.NET 8 · FastAPI</span>
+    <span class="hbadge"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>MIT License</span>
+  </div>
+</div>
+
+<!-- APP PREVIEW -->
+<div class="preview-wrap">
+  <div class="preview-frame">
+    <div class="preview-bar">
+      <div class="preview-dot" style="background:#ff5f56;"></div>
+      <div class="preview-dot" style="background:#ffbd2e;"></div>
+      <div class="preview-dot" style="background:#27c93f;"></div>
+      <div class="preview-url">
+        <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        <span>localhost:5000</span>
+      </div>
+    </div>
+    <div class="preview-inner">
+      <!-- Sidebar -->
+      <div class="preview-sidebar" style="position:relative;">
+        <div class="ps-logo">
+          <div class="ps-logo-icon"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></div>
+          <span>DataCleanPro</span>
+        </div>
+        <div class="ps-nav-item active">
+          <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+          Dashboard
+        </div>
+        <div class="ps-nav-item">
+          <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9z"/></svg>
+          History
+        </div>
+        <div class="ps-nav-item">
+          <svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
+          Analytics
+        </div>
+        <div class="ps-nav-item">
+          <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l-2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+          Settings
+        </div>
+        <div class="ps-status" style="position:relative;margin-top:auto;">
+          <div class="ps-dot"></div>
+          <div class="ps-status-text">Engine Online · exe mode</div>
+        </div>
+      </div>
+      <!-- Content -->
+      <div class="preview-content">
+        <div class="pc-title">Data Cleaner</div>
+        <div class="pc-upload">
+          <div class="pc-upload-icon">☁️</div>
+          <div class="pc-upload-text">Drop your file here or click to browse<br/><span style="opacity:.6;font-size:.65rem;">CSV · Excel · TSV · JSON · Max 50 MB</span></div>
+        </div>
+        <div class="pc-btn">✨ Clean Data</div>
+        <div class="pc-stats">
+          <div class="pc-stat"><div class="pc-stat-val" style="color:#818cf8;">1,200</div><div class="pc-stat-lbl">Original Rows</div></div>
+          <div class="pc-stat"><div class="pc-stat-val" style="color:#34d399;">1,187</div><div class="pc-stat-lbl">Cleaned Rows</div></div>
+          <div class="pc-stat"><div class="pc-stat-val" style="color:#c084fc;">8</div><div class="pc-stat-lbl">Columns</div></div>
+          <div class="pc-stat"><div class="pc-stat-val" style="color:#f87171;">5</div><div class="pc-stat-lbl">Changes Applied</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS STRIP -->
+<div class="stats-strip">
+  <div class="stats-inner">
+    <div class="stat-item"><div class="stat-val">9</div><div class="stat-lbl">Cleaning ops</div></div>
+    <div class="stat-item"><div class="stat-val">4</div><div class="stat-lbl">File formats</div></div>
+    <div class="stat-item"><div class="stat-val">0</div><div class="stat-lbl">Python needed*</div></div>
+    <div class="stat-item"><div class="stat-val">50MB</div><div class="stat-lbl">Max file size</div></div>
+    <div class="stat-item"><div class="stat-val">3</div><div class="stat-lbl">Platforms</div></div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-header">
+    <div class="section-label">Features</div>
+    <h2 class="section-title">Everything you need to clean data</h2>
+    <p class="section-sub">From upload to download in seconds. No configuration, no code, no guesswork.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feat-card">
+      <div class="feat-icon" style="background:#eef2ff;color:#4f46e5;"><svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg></div>
+      <div class="feat-title">Drag-and-drop upload</div>
+      <div class="feat-desc">CSV, Excel (.xlsx/.xls), TSV and JSON — up to 50 MB. Auto-detects encoding and delimiter.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon" style="background:#dcfce7;color:#16a34a;"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg></div>
+      <div class="feat-title">9 automated cleaning ops</div>
+      <div class="feat-desc">Removes empties, deduplicates, normalises whitespace, infers types, fills nulls and more.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon" style="background:#f3e8ff;color:#7c3aed;"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg></div>
+      <div class="feat-title">Live preview table</div>
+      <div class="feat-desc">See up to 500 rows of cleaned data before downloading. Null cells are highlighted.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon" style="background:#fef3c7;color:#d97706;"><svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9z"/></svg></div>
+      <div class="feat-title">Session history</div>
+      <div class="feat-desc">Every cleaning session is logged with quality score, change report, and retry support.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon" style="background:#e0f2fe;color:#0369a1;"><svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg></div>
+      <div class="feat-title">Analytics dashboard</div>
+      <div class="feat-desc">14-day activity charts, quality distribution, format breakdown, most common issues.</div>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon" style="background:#fee2e2;color:#dc2626;"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l-2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></div>
+      <div class="feat-title">Configurable settings</div>
+      <div class="feat-desc">Null fill strategy, duplicate action, thresholds, export format — all persisted to disk.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CLEANING OPS -->
+<section class="ops-section" style="padding:60px 40px;">
+  <div class="section-header">
+    <div class="section-label">Cleaning operations</div>
+    <h2 class="section-title">What gets fixed automatically</h2>
+    <p class="section-sub">Every operation is applied in order, and each change is recorded in the cleaning report.</p>
+  </div>
+  <div class="ops-grid">
+    <div class="op-row"><div class="op-dot" style="background:#4f46e5;"></div><div><div class="op-title">Empty rows &amp; columns</div><div class="op-desc">100% null rows and columns dropped</div></div></div>
+    <div class="op-row"><div class="op-dot" style="background:#dc2626;"></div><div><div class="op-title">Duplicate rows</div><div class="op-desc">Remove or flag in a new column</div></div></div>
+    <div class="op-row"><div class="op-dot" style="background:#0369a1;"></div><div><div class="op-title">Whitespace</div><div class="op-desc">Trims leading/trailing, collapses runs</div></div></div>
+    <div class="op-row"><div class="op-dot" style="background:#0891b2;"></div><div><div class="op-title">Type inference</div><div class="op-desc">Auto-casts to numeric or datetime</div></div></div>
+    <div class="op-row"><div class="op-dot" style="background:#7c3aed;"></div><div><div class="op-title">Null fill</div><div class="op-desc">Median, mean, zero, or drop row</div></div></div>
+    <div class="op-row"><div class="op-dot" style="background:#16a34a;"></div><div><div class="op-title">Title-case</div><div class="op-desc">Applied to categorical string columns</div></div></div>
+    <div class="op-row"><div class="op-dot" style="background:#d97706;"></div><div><div class="op-title">Column name cleaning</div><div class="op-desc">Strips whitespace from headers</div></div></div>
+    <div class="op-row"><div class="op-dot" style="background:#be185d;"></div><div><div class="op-title">Export format</div><div class="op-desc">Same as input, always CSV, or always Excel</div></div></div>
+    <div class="op-row"><div class="op-dot" style="background:#0f766e;"></div><div><div class="op-title">Quality score</div><div class="op-desc">0–100 score of original data quality</div></div></div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how" style="padding:80px 40px;">
+  <div class="section-header">
+    <div class="section-label" style="background:rgba(99,102,241,.15);color:#a5b4fc;">How it works</div>
+    <h2 class="section-title" style="color:white;">Four steps from dirty to clean</h2>
+    <p class="section-sub" style="color:rgba(255,255,255,.5);">No configuration required — the engine figures it out.</p>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-circle">
+        <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+        <span class="step-num">1</span>
+      </div>
+      <div class="step-title">Upload</div>
+      <div class="step-desc">Drop any CSV, Excel, TSV or JSON file</div>
+    </div>
+    <div class="step">
+      <div class="step-circle">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+        <span class="step-num">2</span>
+      </div>
+      <div class="step-title">Clean</div>
+      <div class="step-desc">Click once — 9 operations run in sequence</div>
+    </div>
+    <div class="step">
+      <div class="step-circle">
+        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 11.5H7v-2h8v2zm3-4H7v-2h11v2z"/></svg>
+        <span class="step-num">3</span>
+      </div>
+      <div class="step-title">Review</div>
+      <div class="step-desc">See the full report and 500-row preview</div>
+    </div>
+    <div class="step">
+      <div class="step-circle">
+        <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zm7-18L5.33 9h4.84v6h3.66V9h4.84L12 2z"/></svg>
+        <span class="step-num">4</span>
+      </div>
+      <div class="step-title">Download</div>
+      <div class="step-desc">Get the full cleaned file in your format</div>
+    </div>
+  </div>
+</section>
+
+<!-- PAGES SHOWCASE -->
+<section class="pages-section" id="pages" style="padding:80px 40px;">
+  <div class="section-header">
+    <div class="section-label">Application pages</div>
+    <h2 class="section-title">Four powerful views</h2>
+    <p class="section-sub">Every page communicates with the FastAPI engine running silently in the background.</p>
+  </div>
+  <div class="pages-tabs">
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="switchTab('dashboard',this)">Dashboard</button>
+      <button class="tab-btn" onclick="switchTab('history',this)">History</button>
+      <button class="tab-btn" onclick="switchTab('analytics',this)">Analytics</button>
+      <button class="tab-btn" onclick="switchTab('settings',this)">Settings</button>
+    </div>
+    <div class="tab-panel active" id="tab-dashboard">
+      <div class="page-feat"><div class="page-feat-icon" style="background:#eef2ff;color:#4f46e5;"><svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4c-2.89 0-5.4 1.64-6.65 4.04C2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg></div><div><div class="page-feat-title">Drag-and-drop upload zone</div><div class="page-feat-desc">Accepts CSV, Excel, TSV, JSON up to 50 MB with format validation</div></div></div>
+      <div class="page-feat"><div class="page-feat-icon" style="background:#dcfce7;color:#16a34a;"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg></div><div><div class="page-feat-title">7-step animated pipeline</div><div class="page-feat-desc">Parse → Detect Types → Remove Empties → Fix Nulls → Deduplicate → Normalise → Done</div></div></div>
+      <div class="page-feat"><div class="page-feat-icon" style="background:#f3e8ff;color:#7c3aed;"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 11.5H7v-2h8v2zm3-4H7v-2h11v2z"/></svg></div><div><div class="page-feat-title">Live preview table</div><div class="page-feat-desc">Scrollable up to 500 rows, null cells styled, fixed header columns</div></div></div>
+      <div class="page-feat"><div class="page-feat-icon" style="background:#fef3c7;color:#d97706;"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div><div><div class="page-feat-title">Quality score 0–100</div><div class="page-feat-desc">Rates the original data quality before cleaning with a progress bar and rating label</div></div></div>
+    </div>
+    <div class="tab-panel" id="tab-history">
+      <div class="page-feat"><div class="page-feat-icon" style="background:#eef2ff;color:#4f46e5;"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div><div><div class="page-feat-title">Search and filter</div><div class="page-feat-desc">Filter by filename, file format (CSV/Excel/TSV/JSON) and quality band</div></div></div>
+      <div class="page-feat"><div class="page-feat-icon" style="background:#dcfce7;color:#16a34a;"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg></div><div><div class="page-feat-title">Expandable reports</div><div class="page-feat-desc">Click the eye icon on any entry to see the full per-operation cleaning report inline</div></div></div>
+      <div class="page-feat"><div class="page-feat-icon" style="background:#fee2e2;color:#dc2626;"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></div><div><div class="page-feat-title">Delete and clear</div><div class="page-feat-desc">Remove individual entries or clear all history with a confirmation dialog</div></div></div>
+      <div class="page-feat"><div class="page-feat-icon" style="background:#fef3c7;color:#d97706;"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div><div><div class="page-feat-title">Quality badges</div><div class="page-feat-desc">Green / amber / red badges show original data quality score for each session</div></div></div>
+    </div>
+    <div class="tab-panel" id="tab-analytics">
+      <div class="page-feat"><div class="page-feat-icon" style="background:#eef2ff;color:#4f46e5;"><svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg></div><div><div class="page-feat-title">14-day activity charts</div><div class="page-feat-desc">Files cleaned per day and rows processed per day — today highlighted in primary colour</div></div></div>
+      <div class="page-feat"><div class="page-feat-icon" style="background:#dcfce7;color:#16a34a;"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg></div><div><div class="page-feat-title">Quality distribution</div><div class="page-feat-desc">Excellent / Good / Poor breakdown with percentage bars and average score</div></div></div>
+      <div class="page-feat"><div class="page-feat-icon" style="background:#f3e8ff;color:#7c3aed;"><svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg></div><div><div class="page-feat-title">Most common issues</div><div class="page-feat-desc">Ranked horizontal bars showing which cleaning ops fire most often across all files</div></div></div>
+      <div class="page-feat"><div class="page-feat-icon" style="background:#e0f2fe;color:#0369a1;"><svg viewBox="0 0 24 24"><path d="M20 6h-2.18c.07-.44.18-.88.18-1.33C18 2.54 15.86 1 13.5 1c-1.33 0-2.51.56-3.5 1.52C9.01 1.56 7.83 1 6.5 1 4.14 1 2 2.54 2 4.67c0 .45.11.89.18 1.33H0v2h20V6z"/></svg></div><div><div class="page-feat-title">Format breakdown</div><div class="page-feat-desc">Count and percentage tiles per file format — CSV, Excel, TSV, JSON</div></div></div>
+    </div>
+    <div class="tab-panel" id="tab-settings">
+      <div class="page-feat"><div class="page-feat-icon" style="background:#eef2ff;color:#4f46e5;"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg></div><div><div class="page-feat-title">Null fill strategy</div><div class="page-feat-desc">Choose median, mean, zero, or drop row — applied to all numeric columns</div></div></div>
+      <div class="page-feat"><div class="page-feat-icon" style="background:#dcfce7;color:#16a34a;"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div><div><div class="page-feat-title">Duplicate action</div><div class="page-feat-desc">Remove duplicates or flag them in a new <code>__is_duplicate__</code> column</div></div></div>
+      <div class="page-feat"><div class="page-feat-icon" style="background:#fef3c7;color:#d97706;"><svg viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg></div><div><div class="page-feat-title">Threshold sliders</div><div class="page-feat-desc">Tune title-case and numeric-cast thresholds with live percentage readout</div></div></div>
+      <div class="page-feat"><div class="page-feat-icon" style="background:#fee2e2;color:#dc2626;"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zm7-18L5.33 9h4.84v6h3.66V9h4.84L12 2z"/></svg></div><div><div class="page-feat-title">Export format</div><div class="page-feat-desc">Same as input, always CSV, or always Excel — applied on every download</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- INSTALL -->
+<section class="install-section" id="install" style="padding:80px 40px;">
+  <div class="section-header">
+    <div class="section-label">Installation</div>
+    <h2 class="section-title">Up and running in 60 seconds</h2>
+    <p class="section-sub">The run script handles everything — venv setup, process management, and browser launch.</p>
+  </div>
+  <div class="install-grid">
+    <div>
+      <div class="install-card" style="margin-bottom:16px;">
+        <h3>Quick start</h3>
+        <div class="step-row"><div class="step-num">1</div><div class="step-text">Clone or download the repository for your platform and extract it</div></div>
+        <div class="step-row"><div class="step-num">2</div><div class="step-text">Run <code>./run.sh</code> on macOS/Linux or <code>run.bat</code> on Windows</div></div>
+        <div class="step-row"><div class="step-num">3</div><div class="step-text">Browser opens automatically at <code>http://localhost:5000</code></div></div>
+        <div class="step-row"><div class="step-num">4</div><div class="step-text">Press <code>Ctrl+C</code> to stop — both the web server and the API engine close cleanly</div></div>
+      </div>
+      <div class="install-card">
+        <h3>Build the executable (optional)</h3>
+        <p style="font-size:.8rem;color:var(--ink3);margin-bottom:14px;line-height:1.55;">Build a self-contained API binary — users need no Python at runtime. Requires Python 3.11+ and pip.</p>
+        <div class="code-block">
+          <div class="code-comment"># macOS / Linux</div>
+          <div class="code-cmd">./build_exe.sh</div>
+          <br/>
+          <div class="code-comment"># Windows</div>
+          <div class="code-cmd">build_exe.bat</div>
+          <br/>
+          <div class="code-comment"># Output</div>
+          <div><span class="code-highlight">backend/dist/datacleanpro_api</span></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="install-card" style="margin-bottom:16px;">
+        <h3>Requirements</h3>
+        <div class="req-list">
+          <div class="req-row"><div class="req-icon" style="background:#eef2ff;">⚙️</div><div><div class="req-name">.NET Runtime 8</div><div class="req-ver">dotnet.microsoft.com/download</div></div><span class="req-badge required">Required</span></div>
+          <div class="req-row"><div class="req-icon" style="background:#fef3c7;">🐍</div><div><div class="req-name">Python 3.11+</div><div class="req-ver">Only to build the exe</div></div><span class="req-badge optional">Build only</span></div>
+          <div class="req-row"><div class="req-icon" style="background:#dcfce7;">📦</div><div><div class="req-name">FastAPI engine</div><div class="req-ver">Bundled in package</div></div><span class="req-badge bundled">Bundled</span></div>
+          <div class="req-row"><div class="req-icon" style="background:#e0f2fe;">🪟</div><div><div class="req-name">Windows 10/11</div><div class="req-ver">x64</div></div><span class="req-badge bundled">Supported</span></div>
+          <div class="req-row"><div class="req-icon" style="background:#f3e8ff;">🍎</div><div><div class="req-name">macOS 12+</div><div class="req-ver">Intel &amp; Apple Silicon</div></div><span class="req-badge bundled">Supported</span></div>
+          <div class="req-row"><div class="req-icon" style="background:#dcfce7;">🐧</div><div><div class="req-name">Linux x64</div><div class="req-ver">Ubuntu 20.04+</div></div><span class="req-badge bundled">Supported</span></div>
+        </div>
+      </div>
+      <div class="install-card">
+        <h3>How the exe is launched</h3>
+        <p style="font-size:.78rem;color:var(--ink3);margin-bottom:12px;line-height:1.55;">FastApiService resolves the engine using this priority order:</p>
+        <div class="code-block">
+          <div class="code-comment"># Priority 1 — deployed layout</div>
+          <div class="code-highlight">frontend/api/datacleanpro_api</div>
+          <br/>
+          <div class="code-comment"># Priority 2 — dev build output</div>
+          <div class="code-highlight">backend/dist/datacleanpro_api</div>
+          <br/>
+          <div class="code-comment"># Priority 3 — Python venv</div>
+          <div class="code-cmd">venv/bin/python -m uvicorn main:app</div>
+          <br/>
+          <div class="code-comment"># Priority 4 — system Python</div>
+          <div class="code-cmd">python3 -m uvicorn main:app</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <div class="footer-logo-icon"><svg viewBox="0 0 24 24" fill="white"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></div>
+          <span class="footer-brand-name">DataClean<span>Pro</span></span>
+        </div>
+        <p class="footer-tagline">AI-powered data cleaning for everyone. No Python required. No cloud. Just clean data.</p>
+        <div class="tech-tags" style="margin-top:14px;">
+          <span class="tech-tag">.NET 8</span>
+          <span class="tech-tag">Blazor Server</span>
+          <span class="tech-tag">FastAPI</span>
+          <span class="tech-tag">MudBlazor</span>
+          <span class="tech-tag">PyInstaller</span>
+          <span class="tech-tag">pandas</span>
+          <span class="tech-tag">SignalR</span>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Project</h4>
+        <a href="https://github.com/vijayendrashrimant/DataCleanPRO" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
+        <a href="https://github.com/vijayendrashrimant/DataCleanPRO/issues" target="_blank" rel="noopener noreferrer">Issues</a>
+        <a href="https://github.com/vijayendrashrimant/DataCleanPRO/blob/main/README.md" target="_blank" rel="noopener noreferrer">Documentation</a>
+      </div>
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="#pages">Application Views</a>
+        <a href="#install">Installation</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2025 DataCleanPro · MIT License · <code style="color:rgba(255,255,255,.3);">vijayendrashrimant</code> </span>
+      <div class="footer-links">
+        <a href="https://github.com/vijayendrashrimant/DataCleanPRO/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">License</a>
+        <a href="https://github.com/vijayendrashrimant/DataCleanPRO" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+}
+</script>
+</body>
+</html>
