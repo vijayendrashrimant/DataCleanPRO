@@ -1,390 +1,352 @@
-[DataCleanPro](#)
+# DataCleanPro
 
-[Features](#features) [How it works](#how) [Install](#install)
+[Features](#features) | [How it works](#how-it-works) | [Install](#install)
 
-Open Source · MIT License
+**Open Source · MIT License**
 
-# Smart Data Cleaning powered by AI
+# Smart Data Cleaning Powered by AI
 
-Upload CSV, Excel, TSV or JSON — DataCleanPro automatically detects and fixes quality issues. No Python required by end users.
+Upload CSV, Excel, TSV or JSON — DataCleanPro automatically detects and fixes data quality issues. No Python required by end users.
 
-[Download for free] [View on GitHub](https://github.com/vijayendrashrimant/DataCleanPRO)
+[Download for free](#install) | [View on GitHub](https://github.com/vijayendrashrimant/DataCleanPRO)
 
-v1.0.0 stable Blazor Server .NET 8 · FastAPI MIT License
+**v1.0.0 Stable** | Blazor Server | .NET 8 | FastAPI | MIT License
 
-localhost:5000
+---
 
-DataCleanPro
+## DataCleanPro Dashboard
 
-Dashboard
+- Dashboard
+- History
+- Analytics
+- Settings
 
-History
+**Engine Status:** Online · EXE Mode
 
-Analytics
+### Data Cleaner
 
-Settings
+Upload your file to start cleaning.
 
-Engine Online · exe mode
+> Drop your file here or click to browse
+>
+> CSV · Excel · TSV · JSON · Max 50 MB
 
-Data Cleaner
+**✨ Clean Data**
 
-☁️
+| Metric | Value |
+|---|---:|
+| Original Rows | 1,200 |
+| Cleaned Rows | 1,187 |
+| Columns | 8 |
+| Changes Applied | 5 |
+| Cleaning Operations | 9 |
+| File Formats | 4 |
+| Python Required | 0 |
+| Maximum File Size | 50 MB |
+| Supported Platforms | 3 |
 
-Drop your file here or click to browse\
-CSV · Excel · TSV · JSON · Max 50 MB
+---
 
-✨ Clean Data
+<a id="features"></a>
 
-1,200
+## Features
 
-Original Rows
-
-1,187
-
-Cleaned Rows
-
-8
-
-Columns
-
-5
-
-Changes Applied
-
-9
-
-Cleaning ops
-
-4
-
-File formats
-
-0
-
-Python needed\*
-
-50MB
-
-Max file size
-
-3
-
-Platforms
-
-Features
-
-## Everything you need to clean data
+### Everything you need to clean data
 
 From upload to download in seconds. No configuration, no code, no guesswork.
 
-Drag-and-drop upload
+#### Drag-and-drop upload
 
 CSV, Excel (.xlsx/.xls), TSV and JSON — up to 50 MB. Auto-detects encoding and delimiter.
 
-9 automated cleaning ops
+#### 9 automated cleaning operations
 
-Removes empties, deduplicates, normalises whitespace, infers types, fills nulls and more.
+Removes empty rows and columns, deduplicates, normalises whitespace, infers types, fills nulls and more.
 
-Live preview table
+#### Live preview table
 
 See up to 500 rows of cleaned data before downloading. Null cells are highlighted.
 
-Session history
+#### Session history
 
 Every cleaning session is logged with quality score, change report, and retry support.
 
-Analytics dashboard
+#### Analytics dashboard
 
-14-day activity charts, quality distribution, format breakdown, most common issues.
+14-day activity charts, quality distribution, format breakdown, and most common issues.
 
-Configurable settings
+#### Configurable settings
 
 Null fill strategy, duplicate action, thresholds, export format — all persisted to disk.
 
-Cleaning operations
+---
 
-## What gets fixed automatically
+## Cleaning Operations
+
+### What gets fixed automatically
 
 Every operation is applied in order, and each change is recorded in the cleaning report.
 
-Empty rows & columns
+| Operation | Description |
+|---|---|
+| Empty rows & columns | Drops 100% null rows and columns |
+| Duplicate rows | Removes duplicates or flags them in a new column |
+| Whitespace | Trims leading/trailing spaces and collapses repeated spaces |
+| Type inference | Auto-casts to numeric or datetime |
+| Null fill | Median, mean, zero, or drop row |
+| Title-case | Applied to categorical string columns |
+| Column name cleaning | Strips whitespace from headers |
+| Export format | Same as input, CSV, or Excel |
+| Quality score | Scores original data quality from 0–100 |
 
-100% null rows and columns dropped
+---
 
-Duplicate rows
+<a id="how-it-works"></a>
 
-Remove or flag in a new column
+## How It Works
 
-Whitespace
-
-Trims leading/trailing, collapses runs
-
-Type inference
-
-Auto-casts to numeric or datetime
-
-Null fill
-
-Median, mean, zero, or drop row
-
-Title-case
-
-Applied to categorical string columns
-
-Column name cleaning
-
-Strips whitespace from headers
-
-Export format
-
-Same as input, always CSV, or always Excel
-
-Quality score
-
-0–100 score of original data quality
-
-How it works
-
-## Four steps from dirty to clean
+### Four steps from dirty to clean
 
 No configuration required — the engine figures it out.
 
-1
+**1. Upload**
 
-Upload
+Drop any CSV, Excel, TSV or JSON file.
 
-Drop any CSV, Excel, TSV or JSON file
+**2. Clean**
 
-2
+Click once — 9 operations run in sequence.
 
-Clean
+**3. Review**
 
-Click once — 9 operations run in sequence
+See the full report and 500-row preview.
 
-3
+**4. Download**
 
-Review
+Get the full cleaned file in your preferred format.
 
-See the full report and 500-row preview
+---
 
-4
+## Application Pages
 
-Download
-
-Get the full cleaned file in your format
-
-Application pages
-
-## Four powerful views
+### Four powerful views
 
 Every page communicates with the FastAPI engine running silently in the background.
 
-Drag-and-drop upload zone
+#### Dashboard
 
-Accepts CSV, Excel, TSV, JSON up to 50 MB with format validation
+- Drag-and-drop upload zone
+- Accepts CSV, Excel, TSV and JSON up to 50 MB
+- Format validation
+- 7-step animated pipeline
+- Parse → Detect Types → Remove Empties → Fix Nulls → Deduplicate → Normalise → Done
+- Live preview table
+- Scrollable preview of up to 500 rows
+- Null cells styled
+- Fixed header columns
+- Quality score from 0–100
+- Quality progress bar and rating label
 
-7-step animated pipeline
+#### History
 
-Parse → Detect Types → Remove Empties → Fix Nulls → Deduplicate → Normalise → Done
+- Search and filter by filename
+- Filter by file format (CSV, Excel, TSV, JSON)
+- Filter by quality band
+- Expandable cleaning reports
+- View full per-operation reports inline
+- Delete individual history entries
+- Clear all history with confirmation
+- Green, amber and red quality badges
 
-Live preview table
+#### Analytics
 
-Scrollable up to 500 rows, null cells styled, fixed header columns
+- 14-day activity charts
+- Files cleaned per day
+- Rows processed per day
+- Today's activity highlighted
+- Quality distribution
+- Excellent / Good / Poor breakdown
+- Percentage bars and average score
+- Most common cleaning issues
+- Ranked horizontal bars
+- Format breakdown
+- CSV, Excel, TSV and JSON counts and percentages
 
-Quality score 0–100
+#### Settings
 
-Rates the original data quality before cleaning with a progress bar and rating label
+- Null fill strategy
+- Choose median, mean, zero or drop row
+- Duplicate action
+- Remove duplicates or flag duplicates
+- Flag column: `__is_duplicate__`
+- Threshold sliders
+- Tune title-case and numeric-cast thresholds
+- Live percentage readout
+- Export format
+- Same as input, CSV or Excel
+- Persistent settings
 
-Search and filter
+---
 
-Filter by filename, file format (CSV/Excel/TSV/JSON) and quality band
+## What's New in v1.0.0
 
-Expandable reports
-
-Click the eye icon on any entry to see the full per-operation cleaning report inline
-
-Delete and clear
-
-Remove individual entries or clear all history with a confirmation dialog
-
-Quality badges
-
-Green / amber / red badges show original data quality score for each session
-
-14-day activity charts
-
-Files cleaned per day and rows processed per day — today highlighted in primary colour
-
-Quality distribution
-
-Excellent / Good / Poor breakdown with percentage bars and average score
-
-Most common issues
-
-Ranked horizontal bars showing which cleaning ops fire most often across all files
-
-Format breakdown
-
-Count and percentage tiles per file format — CSV, Excel, TSV, JSON
-
-Null fill strategy
-
-Choose median, mean, zero, or drop row — applied to all numeric columns
-
-Duplicate action
-
-Remove duplicates or flag them in a new `__is_duplicate__` column
-
-Threshold sliders
-
-Tune title-case and numeric-cast thresholds with live percentage readout
-
-Export format
-
-Same as input, always CSV, or always Excel — applied on every download
-
-
-#### What's new
-
-- Blazor Server web app — instant load, no WebAssembly download, persistent SignalR connection
-- Self-contained FastAPI executable via PyInstaller — no Python required by end users
-- FastApiService IHostedService — Python process starts and stops with the .NET host automatically
-- Smart launch priority: bundled exe → backend/dist → Python venv → system Python
-- Dashboard, History, Analytics and Settings pages — full CRUD, search, charts
+- Blazor Server web app
+- Instant load without WebAssembly download
+- Persistent SignalR connection
+- Self-contained FastAPI executable via PyInstaller
+- No Python required by end users
+- FastApiService IHostedService
+- Python process starts and stops automatically with the .NET host
+- Smart launch priority: bundled EXE → backend/dist → Python venv → system Python
+- Dashboard, History, Analytics and Settings pages
+- Full CRUD, search and charts
 - 9 configurable cleaning operations wired to saved settings
-- Threading lock on history file writes — concurrent sessions safe
-- 5-second analytics cache — avoids re-parsing JSON on every page load
-- Live API status pill in sidebar — shows exe/python mode and port
+- Threading lock on history file writes
+- Concurrent sessions safe
+- 5-second analytics cache
+- Live API status pill in sidebar
+- Shows EXE/Python mode and port
 
-#### Known limitations
+---
 
-- PyInstaller exe first cold-start can take 3–8 s depending on hardware
-- macOS Gatekeeper may require right-click → Open on first launch
-- Files over 50 MB are rejected at the upload layer
+## Known Limitations
 
-v1.0.0 .NET 8 · MudBlazor 7.6.0 · FastAPI 0.111 [Full changelog →](https://github.com/yourusername/datacleanpro/compare/v0.0.0...v1.0.0)
+- PyInstaller EXE first cold-start can take 3–8 seconds depending on hardware.
+- macOS Gatekeeper may require right-click → Open on first launch.
+- Files over 50 MB are rejected at the upload layer.
 
-Installation
+**v1.0.0** | .NET 8 | MudBlazor 7.6.0 | FastAPI
 
-## Up and running in 60 seconds
+[Full Changelog](https://github.com/vijayendrashrimant/DataCleanPRO/compare/v0.0.0...v1.0.0)
+
+---
+
+<a id="install"></a>
+
+## Installation
+
+### Up and running in 60 seconds
 
 The run script handles everything — venv setup, process management, and browser launch.
 
-### Quick start
+### Quick Start
 
-1
+**1. Download**
 
-Download the zip for your platform from the Releases section above and extract it
+Download the ZIP for your platform from the Releases section and extract it.
 
-2
+**2. Run**
 
-Run `./run.sh` on macOS/Linux or `run.bat` on Windows
+Windows:
 
-3
+```bat
+run.bat
+```
 
-Browser opens automatically at `http://localhost:5000`
+macOS/Linux:
 
-4
+```bash
+./run.sh
+```
 
-Press `Ctrl+C` to stop — both the web server and the API engine close cleanly
+**3. Open**
 
-### Build the executable (optional)
+The browser opens automatically at:
 
-Build a self-contained API binary — users need no Python at runtime. Requires Python 3.11+ and pip.
+```text
+http://localhost:5000
+```
 
-\# macOS / Linux
+**4. Stop**
 
+Press `Ctrl+C` to stop both the web server and API engine cleanly.
+
+---
+
+### Build the Executable (Optional)
+
+Build a self-contained API binary. Requires Python 3.11+ and pip.
+
+macOS/Linux:
+
+```bash
 ./build_exe.sh
+```
 
-\# Windows
+Windows:
 
+```bat
 build_exe.bat
+```
 
-\# Output
+Output:
 
+```text
 backend/dist/datacleanpro_api
+```
 
-### Requirements
+---
 
-⚙️
+## Requirements
 
-.NET Runtime 8
+| Requirement | Details | Status |
+|---|---|---|
+| .NET Runtime 8 | dotnet.microsoft.com/download | Required |
+| Python 3.11+ | Build EXE only | Build only |
+| FastAPI Engine | Bundled in release ZIP | Bundled |
+| Windows 10/11 | x64 | Supported |
+| macOS 12+ | Intel & Apple Silicon | Supported |
+| Linux | Ubuntu 20.04+ / x64 | Supported |
 
-dotnet.microsoft.com/download
+---
 
-Required
+### How the EXE Is Launched
 
-🐍
+FastApiService resolves the engine using this priority order.
 
-Python 3.11+
+#### Priority 1 — Deployed Layout
 
-Only to build the exe
-
-Build only
-
-📦
-
-FastAPI engine
-
-Bundled in release zip
-
-Bundled
-
-🪟
-
-Windows 10/11
-
-x64
-
-Supported
-
-🍎
-
-macOS 12+
-
-Intel & Apple Silicon
-
-Supported
-
-🐧
-
-Linux x64
-
-Ubuntu 20.04+
-
-Supported
-
-### How the exe is launched
-
-FastApiService resolves the engine using this priority order:
-
-\# Priority 1 — deployed layout
-
+```text
 frontend/api/datacleanpro_api
+```
 
-\# Priority 2 — dev build output
+#### Priority 2 — Development Build Output
 
+```text
 backend/dist/datacleanpro_api
+```
 
-\# Priority 3 — Python venv
+#### Priority 3 — Python Virtual Environment
 
+```bash
 venv/bin/python -m uvicorn main:app
+```
 
-\# Priority 4 — system Python
+#### Priority 4 — System Python
 
+```bash
 python3 -m uvicorn main:app
+```
 
-DataCleanPro
+---
 
-AI-powered data cleaning for everyone. No Python required. No cloud. Just clean data.
+## DataCleanPro
 
-.NET 8 Blazor Server FastAPI MudBlazor PyInstaller pandas SignalR
+**AI-powered data cleaning for everyone.**
 
-#### Project
+No Python required. No cloud. Just clean data.
 
-[GitHub Repository](https://github.com/vijayendrashrimant/DataCleanPRO)  [Documentation](https://github.com/yourusername/datacleanpro/blob/main/README.md)
+**Tech Stack**
 
+.NET 8 · Blazor Server · FastAPI · MudBlazor · PyInstaller · pandas · SignalR
 
-© 2025 DataCleanPro · MIT License · Replace `vijayendrashrimant` 
+### Project
 
-[License](https://github.com/vijayendrashrimant/DataCleanPRO/blob/main/LICENSE) [GitHub](https://github.com/vijayendrashrimant/DataCleanPRO)
+- [GitHub Repository](https://github.com/vijayendrashrimant/DataCleanPRO)
+- [Documentation](https://github.com/vijayendrashrimant/DataCleanPRO/blob/main/README.md)
+- [License](https://github.com/vijayendrashrimant/DataCleanPRO/blob/main/LICENSE)
+
+---
+
+© 2025 DataCleanPro · MIT License · `vijayendrashrimant`
+
