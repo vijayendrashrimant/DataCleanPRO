@@ -1,0 +1,206 @@
+@page "/settings"
+@using DataCleanPro.Models
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+@implements IDisposable
+
+<PageTitle>DataCleanPro — Settings</PageTitle>
+
+<ApiStatusCheck>
+    <div style="padding:28px 32px;">
+
+        <div style="margin-bottom:28px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+                <MudText Style="font-size:1.5rem;font-weight:800;color:#1a237e;line-height:1;">Settings</MudText>
+                <div class="step-pill"><MudIcon Icon="@Icons.Material.Filled.Settings" Style="font-size:12px;" />PREFERENCES</div>
+            </div>
+            <MudText Style="color:#78909C;font-size:.88rem;">Customise how DataCleanPro analyses and cleans your files.</MudText>
+        </div>
+
+        @if (_loading)
+        {
+            <div style="display:flex;justify-content:center;padding:80px 0;">
+                <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+            </div>
+        }
+        else
+        {
+            <MudGrid Spacing="3">
+                <MudItem xs="12" md="6">
+                    <MudPaper Elevation="0" Style="border-radius:16px;border:1px solid #E8EAF6;background:white;padding:24px;">
+                        <div class="section-header">
+                            <div class="section-badge" style="background:#3949AB;"></div>
+                            <div><MudText Style="font-weight:700;font-size:.95rem;color:#1a237e;">Cleaning Behaviour</MudText><MudText Style="font-size:.72rem;color:#9E9E9E;">Control how the engine handles data issues</MudText></div>
+                        </div>
+
+                        <SettingRow Label="Null fill strategy" Description="How missing numeric values are filled">
+                            <MudSelect @bind-Value="_s.NullFillStrategy" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width:140px;">
+                                <MudSelectItem Value="@("median")">Median</MudSelectItem>
+                                <MudSelectItem Value="@("mean")">Mean</MudSelectItem>
+                                <MudSelectItem Value="@("zero")">Zero</MudSelectItem>
+                                <MudSelectItem Value="@("drop")">Drop row</MudSelectItem>
+                            </MudSelect>
+                        </SettingRow>
+                        <MudDivider Class="my-3" />
+                        <SettingRow Label="Duplicate action" Description="What to do with exact duplicate rows">
+                            <MudSelect @bind-Value="_s.DuplicateAction" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width:140px;">
+                                <MudSelectItem Value="@("remove")">Remove</MudSelectItem>
+                                <MudSelectItem Value="@("flag")">Flag only</MudSelectItem>
+                            </MudSelect>
+                        </SettingRow>
+                        <MudDivider Class="my-3" />
+                        <SettingRow Label="Title-case threshold" Description="@($"Min fraction of alphabetic values ({_s.TitleCaseThreshold * 100:F0}%)")">
+                            <div style="width:180px;"><MudSlider @bind-Value="_s.TitleCaseThreshold" Min="0.5" Max="1.0" Step="0.05" Color="Color.Primary">@(_s.TitleCaseThreshold * 100)%</MudSlider></div>
+                        </SettingRow>
+                        <MudDivider Class="my-3" />
+                        <SettingRow Label="Numeric cast threshold" Description="@($"Min parseable fraction to cast to numeric ({_s.NumericThreshold * 100:F0}%)")">
+                            <div style="width:180px;"><MudSlider @bind-Value="_s.NumericThreshold" Min="0.5" Max="1.0" Step="0.05" Color="Color.Primary">@(_s.NumericThreshold * 100)%</MudSlider></div>
+                        </SettingRow>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudPaper Elevation="0" Style="border-radius:16px;border:1px solid #E8EAF6;background:white;padding:24px;">
+                        <div class="section-header">
+                            <div class="section-badge" style="background:#00ACC1;"></div>
+                            <div><MudText Style="font-weight:700;font-size:.95rem;color:#1a237e;">Output &amp; Display</MudText><MudText Style="font-size:.72rem;color:#9E9E9E;">Configure how results are shown and exported</MudText></div>
+                        </div>
+
+                        <SettingRow Label="Preview row limit" Description="Maximum rows shown in the data preview table">
+                            <MudSelect @bind-Value="_s.MaxPreviewRows" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width:110px;">
+                                <MudSelectItem Value="@(50)">50</MudSelectItem>
+                                <MudSelectItem Value="@(100)">100</MudSelectItem>
+                                <MudSelectItem Value="@(200)">200</MudSelectItem>
+                                <MudSelectItem Value="@(500)">500</MudSelectItem>
+                            </MudSelect>
+                        </SettingRow>
+                        <MudDivider Class="my-3" />
+                        <SettingRow Label="Export format" Description="Default format for downloaded cleaned files">
+                            <MudSelect @bind-Value="_s.ExportFormat" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width:140px;">
+                                <MudSelectItem Value="@("same")">Same as input</MudSelectItem>
+                                <MudSelectItem Value="@("csv")">Always CSV</MudSelectItem>
+                                <MudSelectItem Value="@("xlsx")">Always Excel</MudSelectItem>
+                            </MudSelect>
+                        </SettingRow>
+                        <MudDivider Class="my-3" />
+                        <SettingRow Label="Date display format" Description="How dates appear in the preview table">
+                            <MudSelect @bind-Value="_s.DateFormat" Variant="Variant.Outlined" Margin="Margin.Dense" Style="min-width:140px;">
+                                <MudSelectItem Value="@("ISO")">ISO (2024-01-31)</MudSelectItem>
+                                <MudSelectItem Value="@("US")">US (01/31/2024)</MudSelectItem>
+                                <MudSelectItem Value="@("EU")">EU (31/01/2024)</MudSelectItem>
+                            </MudSelect>
+                        </SettingRow>
+                        <MudDivider Class="my-3" />
+                        <SettingRow Label="Auto-download after clean" Description="Automatically download the cleaned file without clicking">
+                            <MudSwitch @bind-Value="_s.AutoDownload" Color="Color.Primary" />
+                        </SettingRow>
+                    </MudPaper>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudPaper Elevation="0" Style="border-radius:16px;border:1px solid #E8EAF6;background:white;padding:24px;">
+                        <div class="section-header" style="margin-bottom:16px;">
+                            <div class="section-badge" style="background:#8E24AA;"></div>
+                            <MudText Style="font-weight:700;font-size:.95rem;color:#1a237e;">About DataCleanPro</MudText>
+                        </div>
+                        <MudGrid Spacing="3">
+                            @foreach (var (lbl, val) in new[]
+                            {
+                                ("Version","1.0.0"),("Engine","Python FastAPI"),
+                                ("UI","Blazor Server + MudBlazor"),("Host","ASP.NET Core 8"),
+                            })
+                            {
+                                <MudItem xs="6" sm="3">
+                                    <div style="padding:16px;background:#F8F9FF;border-radius:12px;border:1px solid #E8EAF6;">
+                                        <MudText Style="font-size:.68rem;font-weight:700;color:#9E9E9E;letter-spacing:.5px;margin-bottom:4px;">@lbl</MudText>
+                                        <MudText Style="font-size:.85rem;font-weight:600;color:#3949AB;">@val</MudText>
+                                    </div>
+                                </MudItem>
+                            }
+                        </MudGrid>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+
+            <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:24px;">
+                <MudButton Variant="Variant.Outlined" Color="Color.Default"
+                           OnClick="@(() => { _s = new(); Snackbar.Add("Defaults restored — click Save to apply", Severity.Info); })"
+                           Style="border-radius:10px;font-weight:600;">Reset to Defaults</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAsync"
+                           Disabled="@_saving" StartIcon="@Icons.Material.Filled.Save"
+                           Style="border-radius:10px;font-weight:600;box-shadow:0 4px 12px rgba(57,73,171,.3);">
+                    @(_saving ? "Saving…" : "Save Settings")
+                </MudButton>
+            </div>
+        }
+    </div>
+</ApiStatusCheck>
+
+@code {
+    private AppSettings _s = new();
+    private bool _loading = true, _saving = false;
+    private bool _disposed = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var loaded = await Http.GetFromJsonAsync<AppSettings>("settings");
+            if (!_disposed && loaded != null)
+            {
+                _s = loaded;
+            }
+        }
+        catch
+        {
+            if (!_disposed)
+            {
+                _s = new();
+            }
+        }
+        finally
+        {
+            if (!_disposed)
+            {
+                _loading = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+        StateHasChanged();
+
+        try
+        {
+            var r = await Http.PostAsJsonAsync("settings", _s);
+            if (!_disposed)
+            {
+                Snackbar.Add(r.IsSuccessStatusCode ? "Settings saved" : "Failed to save",
+                             r.IsSuccessStatusCode ? Severity.Success : Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            if (!_disposed)
+            {
+                Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            }
+        }
+        finally
+        {
+            if (!_disposed)
+            {
+                _saving = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+    }
+}

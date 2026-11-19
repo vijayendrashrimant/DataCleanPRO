@@ -1,0 +1,425 @@
+@page "/"
+@using DataCleanPro.Models
+@using System.Net.Http.Headers
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+
+<PageTitle>DataCleanPro — Dashboard</PageTitle>
+
+<ApiStatusCheck>
+<div style="padding:28px 32px;">
+
+    <div style="margin-bottom:28px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+            <MudText Style="font-size:1.5rem;font-weight:800;color:#1a237e;line-height:1;">Data Cleaner</MudText>
+            <div class="step-pill"><MudIcon Icon="@Icons.Material.Filled.AutoFixHigh" Style="font-size:12px;" />AUTOMATED</div>
+        </div>
+        <MudText Style="color:#78909C;font-size:.88rem;">Upload any structured data file — the engine automatically detects and fixes quality issues.</MudText>
+    </div>
+
+    @if (_result == null && !_loading)
+    {
+        <div class="info-banner" style="background:linear-gradient(135deg,#E8EAF6,#EDE7F6);border:1px solid #C5CAE9;margin-bottom:24px;">
+            <MudIcon Icon="@Icons.Material.Filled.Lightbulb" Style="color:#5C6BC0;font-size:28px;flex-shrink:0;" />
+            <div>
+                <MudText Style="font-weight:700;color:#283593;font-size:.88rem;margin-bottom:4px;">How it works</MudText>
+                <MudText Style="color:#5C6BC0;font-size:.81rem;line-height:1.6;">
+                    <b>1 Upload</b> your CSV, Excel, TSV or JSON file &nbsp;→&nbsp;
+                    <b>2 Click Clean</b> — the engine analyses every column &nbsp;→&nbsp;
+                    <b>3 Review</b> the change report and data preview &nbsp;→&nbsp;
+                    <b>4 Download</b> the polished file.
+                </MudText>
+            </div>
+        </div>
+    }
+
+    <MudPaper Elevation="0" Style="border-radius:16px;border:1px solid #E8EAF6;background:white;padding:28px;margin-bottom:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+            <div class="section-header" style="margin-bottom:0;">
+                <div class="section-badge" style="background:#3949AB;"></div>
+                <MudText Style="font-weight:700;font-size:1rem;color:#1a237e;">Upload Data File</MudText>
+            </div>
+            @if (_selectedFile != null)
+            {
+                <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary"
+                         Icon="@Icons.Material.Filled.InsertDriveFile" OnClose="ClearFile">
+                    @_selectedFile.Name
+                </MudChip>
+            }
+        </div>
+
+        <MudGrid Spacing="4">
+            <MudItem xs="12" md="7">
+                <MudFileUpload T="IBrowserFile" FilesChanged="OnFileSelected"
+                               Accept=".csv,.xlsx,.xls,.tsv,.json,.txt" MaximumFileCount="1">
+                    <ActivatorContent>
+                        <div class="upload-zone @(_selectedFile != null ? "has-file" : "")">
+                            @if (_selectedFile == null)
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.CloudUpload" Style="font-size:48px;color:#9FA8DA;margin-bottom:12px;" />
+                                <MudText Style="font-weight:700;color:#3949AB;font-size:1rem;margin-bottom:4px;">Drop your file here or click to browse</MudText>
+                                <MudText Style="color:#9E9E9E;font-size:.8rem;">CSV · Excel (.xlsx/.xls) · TSV · JSON &nbsp;·&nbsp; Max 50 MB</MudText>
+                            }
+                            else
+                            {
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Style="font-size:44px;color:#43A047;margin-bottom:10px;" />
+                                <MudText Style="font-weight:700;color:#2E7D32;font-size:.95rem;margin-bottom:4px;">@_selectedFile.Name</MudText>
+                                <MudText Style="color:#78909C;font-size:.78rem;">@_fileSize &nbsp;·&nbsp; @_fileExt.ToUpper() &nbsp;·&nbsp; Click to change</MudText>
+                            }
+                        </div>
+                    </ActivatorContent>
+                </MudFileUpload>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;">
+                    @foreach (var f in new[]{ ("CSV","#E3F2FD","#1565C0"),("Excel","#E8F5E9","#2E7D32"),("TSV","#FFF3E0","#E65100"),("JSON","#F3E5F5","#6A1B9A") })
+                    {
+                        <span style="padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;background:@f.Item2;color:@f.Item3;">@f.Item1</span>
+                    }
+                </div>
+            </MudItem>
+
+            <MudItem xs="12" md="5">
+                <div style="display:flex;flex-direction:column;gap:12px;height:100%;justify-content:center;">
+                    <div style="background:#F8F9FF;border:1px solid #E8EAF6;border-radius:12px;padding:16px;">
+                        <MudText Style="font-weight:700;font-size:.75rem;color:#3949AB;letter-spacing:.5px;margin-bottom:10px;">WHAT GETS CLEANED</MudText>
+                        @foreach (var op in _ops)
+                        {
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                                <MudIcon Icon="@op.Icon" Style="@($"font-size:14px;color:{op.Color};")" />
+                                <MudText Style="font-size:.78rem;color:#455A64;">@op.Label</MudText>
+                            </div>
+                        }
+                    </div>
+                    <MudButton Class="btn-clean" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
+                               Disabled="@(_selectedFile == null || _loading)" OnClick="RunClean"
+                               StartIcon="@Icons.Material.Filled.AutoFixHigh">
+                        @if (_loading)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Color="Color.Inherit" Style="margin-right:8px;" />
+                            <span>Analysing &amp; Cleaning…</span>
+                        }
+                        else { <span>Clean Data</span> }
+                    </MudButton>
+                    @if (_result != null)
+                    {
+                        <MudButton Class="btn-download" Variant="Variant.Outlined" Color="Color.Success" FullWidth="true"
+                                   OnClick="DownloadClean" Disabled="@_downloading"
+                                   StartIcon="@(_downloading ? Icons.Material.Filled.HourglassTop : Icons.Material.Filled.Download)">
+                            @(_downloading ? "Preparing…" : "Download Cleaned File")
+                        </MudButton>
+                    }
+                </div>
+            </MudItem>
+        </MudGrid>
+
+        @if (_loading)
+        {
+            <div style="margin-top:24px;padding:16px;background:#F8F9FF;border:1px solid #E8EAF6;border-radius:12px;">
+                <MudText Style="font-size:.75rem;font-weight:700;color:#3949AB;letter-spacing:.5px;margin-bottom:12px;">PROCESSING PIPELINE</MudText>
+                <div class="progress-track">
+                    @for (int i = 0; i < _pipeline.Length; i++)
+                    {
+                        var idx = i; var done = idx < _pipelineStep; var active = idx == _pipelineStep; var isLast = idx == _pipeline.Length - 1;
+                        <div class="progress-step">
+                            <div class="progress-step-circle" style="@((done||active)?"background:#3949AB;border-color:#3949AB;color:white;":"background:white;border-color:#C5CAE9;color:#9E9E9E;")">
+                                @if (done) { <MudIcon Icon="@Icons.Material.Filled.Check" Style="font-size:13px;" /> } else { <span>@(idx+1)</span> }
+                            </div>
+                            <MudText Style="@($"font-size:.63rem;margin-top:4px;text-align:center;max-width:62px;color:{((done||active)?"#3949AB":"#9E9E9E")};font-weight:{(active?"700":"400")};")">@_pipeline[idx]</MudText>
+                        </div>
+                        @if (!isLast) { <div class="progress-step-line" style="background:@(done?"#3949AB":"#E8EAF6");"></div> }
+                    }
+                </div>
+            </div>
+        }
+    </MudPaper>
+
+    @if (_result != null)
+    {
+        <MudGrid Spacing="3" Style="margin-bottom:24px;">
+            @{ var removed = _result.OriginalShape.Rows - _result.CleanedShape.Rows; }
+            <MudItem xs="6" sm="3">
+                <div class="stat-card" style="border-color:#3949AB;">
+                    <div class="stat-icon" style="background:#EEF0FF;"><MudIcon Icon="@Icons.Material.Filled.TableRows" Style="color:#3949AB;" /></div>
+                    <div><MudText Style="font-size:1.4rem;font-weight:800;color:#1a237e;line-height:1.1;">@_result.OriginalShape.Rows.ToString("N0")</MudText><MudText Style="font-size:.72rem;color:#78909C;font-weight:500;">Original Rows</MudText></div>
+                </div>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <div class="stat-card" style="border-color:#43A047;">
+                    <div class="stat-icon" style="background:#E8F5E9;"><MudIcon Icon="@Icons.Material.Filled.CheckCircle" Style="color:#43A047;" /></div>
+                    <div>
+                        <MudText Style="font-size:1.4rem;font-weight:800;color:#2E7D32;line-height:1.1;">@_result.CleanedShape.Rows.ToString("N0")</MudText>
+                        <MudText Style="font-size:.72rem;color:#78909C;font-weight:500;">Cleaned Rows</MudText>
+                        @if (removed > 0) { <MudText Style="font-size:.68rem;color:#E53935;font-weight:600;">−@removed removed</MudText> }
+                    </div>
+                </div>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <div class="stat-card" style="border-color:#8E24AA;">
+                    <div class="stat-icon" style="background:#F3E5F5;"><MudIcon Icon="@Icons.Material.Filled.ViewColumn" Style="color:#8E24AA;" /></div>
+                    <div><MudText Style="font-size:1.4rem;font-weight:800;color:#6A1B9A;line-height:1.1;">@_result.CleanedShape.Cols</MudText><MudText Style="font-size:.72rem;color:#78909C;font-weight:500;">Columns</MudText></div>
+                </div>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <div class="stat-card" style="border-color:#F4511E;">
+                    <div class="stat-icon" style="background:#FBE9E7;"><MudIcon Icon="@Icons.Material.Filled.CleaningServices" Style="color:#F4511E;" /></div>
+                    <div><MudText Style="font-size:1.4rem;font-weight:800;color:#BF360C;line-height:1.1;">@_result.Report.Count</MudText><MudText Style="font-size:.72rem;color:#78909C;font-weight:500;">Changes Applied</MudText></div>
+                </div>
+            </MudItem>
+        </MudGrid>
+
+        <MudGrid Spacing="3">
+            <MudItem xs="12" md="4">
+                <MudPaper Elevation="0" Style="border-radius:16px;border:1px solid #E8EAF6;background:white;padding:24px;height:100%;">
+                    <div class="section-header">
+                        <div class="section-badge" style="background:#F4511E;"></div>
+                        <div>
+                            <MudText Style="font-weight:700;font-size:.95rem;color:#1a237e;">Cleaning Report</MudText>
+                            <MudText Style="font-size:.72rem;color:#9E9E9E;">@_result.Report.Count operation(s) performed</MudText>
+                        </div>
+                    </div>
+                    @foreach (var r in _result.Report)
+                    {
+                            <div class="report-item">
+                                <div class="report-icon" style="background:@GetReportBg(r.Type);">
+                                    <MudIcon Icon="@GetReportIcon(r.Type)"
+                                             Style="@($"font-size:15px;color:{GetReportHex(r.Type)};")" />
+                                </div>
+                                <div>
+                                    <MudText Style="font-size:.78rem;font-weight:600;color:#263238;line-height:1.3;">
+                                        @GetReportTitle(r.Type)
+                                    </MudText>
+                                    <MudText Style="font-size:.73rem;color:#78909C;line-height:1.4;">
+                                        @r.Detail
+                                    </MudText>
+                                </div>
+                            </div>
+                    }
+                    @{ var score = CalcQualityScore(); }
+                    <div style="margin-top:20px;padding:16px;background:linear-gradient(135deg,#E8EAF6,#EDE7F6);border-radius:12px;text-align:center;">
+                        <MudText Style="font-size:.68rem;font-weight:700;color:#5C6BC0;letter-spacing:.5px;margin-bottom:4px;">ORIGINAL DATA QUALITY</MudText>
+                        <MudText Style="font-size:2rem;font-weight:800;color:#3949AB;line-height:1.1;">@score<span style="font-size:1rem;opacity:.5;">/100</span></MudText>
+                        <MudProgressLinear Value="@((double)score)" Color="Color.Primary" Rounded="true" Style="margin-top:8px;height:6px;" />
+                        <MudText Style="font-size:.7rem;color:#7986CB;margin-top:6px;">@(score>=90?"✓ Arrived clean":score>=70?"Minor issues found":"Significant issues found")</MudText>
+                        <MudText Style="font-size:.65rem;color:#9FA8DA;margin-top:2px;">Score reflects state before cleaning</MudText>
+                    </div>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="8">
+                <MudPaper Elevation="0" Style="border-radius:16px;border:1px solid #E8EAF6;background:white;padding:24px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                        <div class="section-header" style="margin-bottom:0;">
+                            <div class="section-badge" style="background:#3949AB;"></div>
+                            <div>
+                                <MudText Style="font-weight:700;font-size:.95rem;color:#1a237e;">Data Preview</MudText>
+                                <MudText Style="font-size:.72rem;color:#9E9E9E;">Showing @_result.Preview.Count of @_result.CleanedShape.Rows rows · @_result.CleanedShape.Cols columns</MudText>
+                            </div>
+                        </div>
+                        <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Success"
+                                   StartIcon="@Icons.Material.Filled.Download" OnClick="DownloadClean"
+                                   Disabled="@_downloading" Style="border-radius:8px;font-size:.78rem;font-weight:600;">
+                            @(_downloading ? "Preparing…" : "Download")
+                        </MudButton>
+                    </div>
+                    <div style="overflow:auto;max-height:440px;border-radius:10px;border:1px solid #E8EAF6;">
+                        <MudTable Items="@_result.Preview" Class="clean-table" Dense="true" Hover="true" Striped="true" FixedHeader="true" Elevation="0">
+                            <HeaderContent>@foreach (var col in _result.Columns) { <MudTh>@col</MudTh> }</HeaderContent>
+                            <RowTemplate>
+                                @foreach (var col in _result.Columns)
+                                {
+                                    <MudTd>
+                                        @{ var val = context.TryGetValue(col, out var v) ? v?.ToString() ?? "" : ""; }
+                                        @if (string.IsNullOrEmpty(val)) { <span style="color:#BDBDBD;font-style:italic;font-size:.72rem;">null</span> } else { @val }
+                                    </MudTd>
+                                }
+                            </RowTemplate>
+                        </MudTable>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:16px;margin-top:12px;flex-wrap:wrap;">
+                        <MudText Style="font-size:.7rem;color:#9E9E9E;"><span style="color:#BDBDBD;font-style:italic;">null</span> = empty cell</MudText>
+                        <MudSpacer />
+                        <MudText Style="font-size:.7rem;color:#9E9E9E;">Preview capped per settings — download for full dataset</MudText>
+                    </div>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+</div>
+</ApiStatusCheck>
+
+@code {
+    private IBrowserFile?    _selectedFile;
+    private byte[]?          _fileBytes;
+    private PreviewResponse? _result;
+    private bool             _loading;
+    private bool             _downloading;
+    private string           _fileSize = "";
+    private string           _fileExt  = "";
+    private int              _pipelineStep;
+    private System.Threading.Timer? _pipelineTimer;
+
+    private readonly string[] _pipeline = { "Parse","Detect Types","Remove Empties","Fix Nulls","Deduplicate","Normalise","Done" };
+
+    private record Op(string Icon, string Color, string Label);
+    private readonly Op[] _ops =
+    {
+        new(Icons.Material.Filled.DeleteSweep,      "#E53935", "Empty rows & columns removed"),
+        new(Icons.Material.Filled.ContentCopy,       "#FB8C00", "Duplicate rows deduplicated"),
+        new(Icons.Material.Filled.SpaceBar,          "#3949AB", "Whitespace normalised"),
+        new(Icons.Material.Filled.DataArray,         "#00ACC1", "Data types auto-detected"),
+        new(Icons.Material.Filled.FiberManualRecord, "#8E24AA", "Null values filled (configurable)"),
+        new(Icons.Material.Filled.TextFields,        "#43A047", "Inconsistent casing fixed"),
+    };
+
+    private void OnFileSelected(IBrowserFile file)
+    {
+        _selectedFile = file; _fileBytes = null; _result = null;
+        var sz = file.Size;
+        _fileSize = sz < 1024 ? $"{sz} B" : sz < 1_048_576 ? $"{sz/1024.0:F1} KB" : $"{sz/1_048_576.0:F1} MB";
+        _fileExt  = file.Name.Contains('.') ? file.Name[(file.Name.LastIndexOf('.')+1)..] : "file";
+    }
+
+    private void ClearFile() { _selectedFile = null; _fileBytes = null; _result = null; _fileSize = ""; _fileExt = ""; }
+
+    private async Task<byte[]?> GetBytesAsync()
+    {
+        if (_fileBytes != null) return _fileBytes;
+        if (_selectedFile == null) return null;
+        try
+        {
+            await using var s = _selectedFile.OpenReadStream(maxAllowedSize: 52_428_800);
+            using var ms = new MemoryStream();
+            await s.CopyToAsync(ms);
+            return _fileBytes = ms.ToArray();
+        }
+        catch (Exception ex) { Snackbar.Add($"Could not read file: {ex.Message}", Severity.Error); return null; }
+    }
+
+    private static MultipartFormDataContent BuildForm(byte[] bytes, string name)
+    {
+        var form = new MultipartFormDataContent();
+        var sc   = new ByteArrayContent(bytes);
+        sc.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+        form.Add(sc, "file", name);
+        return form;
+    }
+
+    private async Task RunClean()
+    {
+        if (_selectedFile == null) return;
+        _loading = true; _pipelineStep = 0; _result = null;
+        StateHasChanged();
+
+        _pipelineTimer = new System.Threading.Timer(_ =>
+        {
+            if (_pipelineStep < _pipeline.Length - 1) _pipelineStep++;
+            InvokeAsync(StateHasChanged);
+        }, null, 500, 600);
+
+        try
+        {
+            var bytes = await GetBytesAsync();
+            if (bytes == null) return;
+            using var form = BuildForm(bytes, _selectedFile.Name);
+            var resp = await Http.PostAsync("clean/preview", form);
+            if (!resp.IsSuccessStatusCode)
+            {
+                Snackbar.Add($"Engine error: {await resp.Content.ReadAsStringAsync()}", Severity.Error);
+                _pipelineStep = 0; return;
+            }
+            _pipelineStep = _pipeline.Length - 1;
+            _result = await resp.Content.ReadFromJsonAsync<PreviewResponse>();
+            Snackbar.Add($"✓ Cleaned — {_result!.Report.Count} change(s) applied", Severity.Success);
+            await SaveHistoryAsync(_result, bytes);
+        }
+        catch (Exception ex) { _pipelineStep = 0; Snackbar.Add($"Error: {ex.Message}", Severity.Error); }
+        finally
+        {
+            if (_pipelineTimer != null) { await _pipelineTimer.DisposeAsync(); _pipelineTimer = null; }
+            _loading = false;
+        }
+    }
+
+    private async Task DownloadClean()
+    {
+        if (_selectedFile == null) return;
+        _downloading = true; StateHasChanged();
+        try
+        {
+            var bytes = await GetBytesAsync();
+            if (bytes == null) return;
+            using var form = BuildForm(bytes, _selectedFile.Name);
+            var resp = await Http.PostAsync("clean/download", form);
+            if (!resp.IsSuccessStatusCode) { Snackbar.Add("Download failed.", Severity.Error); return; }
+            var outBytes = await resp.Content.ReadAsByteArrayAsync();
+            var dot = _selectedFile.Name.LastIndexOf('.');
+            var isXl = _selectedFile.Name.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)
+                    || _selectedFile.Name.EndsWith(".xls",  StringComparison.OrdinalIgnoreCase);
+            var fname = (dot > 0 ? _selectedFile.Name[..dot] : _selectedFile.Name) + "_cleaned" + (isXl ? ".xlsx" : ".csv");
+            await JS.InvokeVoidAsync("downloadFile", Convert.ToBase64String(outBytes), fname);
+            Snackbar.Add($"Download started: {fname}", Severity.Success);
+        }
+        catch (Exception ex) { Snackbar.Add($"Download error: {ex.Message}", Severity.Error); }
+        finally { _downloading = false; }
+    }
+
+    private async Task SaveHistoryAsync(PreviewResponse result, byte[] bytes)
+    {
+        try
+        {
+            var entry = new HistoryEntry
+            {
+                Id = Guid.NewGuid().ToString(), Filename = result.Filename ?? _selectedFile!.Name,
+                CleanedAt = DateTime.UtcNow.ToString("o"),
+                OriginalRows = result.OriginalShape.Rows, CleanedRows = result.CleanedShape.Rows,
+                OriginalCols = result.OriginalShape.Cols, CleanedCols = result.CleanedShape.Cols,
+                Changes = result.Report.Count, QualityScore = CalcQualityScore(),
+                FileSizeKb = Math.Round(bytes.Length / 1024.0, 1), Report = result.Report,
+            };
+            await Http.PostAsJsonAsync("history", entry);
+        }
+        catch { /* best-effort */ }
+    }
+
+    private int CalcQualityScore()
+    {
+        if (_result == null) return 0;
+        var s = 100;
+        foreach (var r in _result.Report)
+            s -= r.Type switch { "duplicates" or "empty_rows" or "empty_cols" => 10, "null_fill" => 5, _ => 2 };
+        return Math.Clamp(s, 0, 100);
+    }
+
+    private static string GetReportIcon(string t) => t switch
+    {
+        "duplicates"    => Icons.Material.Filled.ContentCopy,
+        "empty_rows"    => Icons.Material.Filled.TableRows,
+        "empty_cols"    => Icons.Material.Filled.ViewColumn,
+        "null_fill"     => Icons.Material.Filled.FiberManualRecord,
+        "whitespace"    => Icons.Material.Filled.SpaceBar,
+        "casing"        => Icons.Material.Filled.TextFields,
+        "column_rename" => Icons.Material.Filled.DriveFileRenameOutline,
+        "no_changes"    => Icons.Material.Filled.Verified,
+        _               => Icons.Material.Filled.Build,
+    };
+    private static string GetReportBg(string t) => t switch
+    {
+        "duplicates" or "empty_rows" or "empty_cols" => "#FBE9E7",
+        "null_fill" => "#F3E5F5", "whitespace" => "#E3F2FD",
+        "casing" or "no_changes" => "#E8F5E9", _ => "#EEF0FF",
+    };
+    private static string GetReportHex(string t) => t switch
+    {
+        "duplicates" or "empty_rows" or "empty_cols" => "#F4511E",
+        "null_fill" => "#8E24AA", "whitespace" => "#1565C0",
+        "casing" or "no_changes" => "#2E7D32", _ => "#3949AB",
+    };
+    private static string GetReportTitle(string t) => t switch
+    {
+        "duplicates" => "Duplicates Removed", "empty_rows" => "Empty Rows Dropped",
+        "empty_cols" => "Empty Columns Dropped", "null_fill" => "Nulls Filled",
+        "whitespace" => "Whitespace Normalised", "casing" => "Casing Fixed",
+        "column_rename" => "Column Names Cleaned", "no_changes" => "No Issues Found",
+        _ => "Data Fixed",
+    };
+}

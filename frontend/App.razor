@@ -1,0 +1,16 @@
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found — DataCleanPro</PageTitle>
+        <LayoutView Layout="@typeof(Layout.MainLayout)">
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;padding:40px;">
+                <MudIcon Icon="@Icons.Material.Filled.SearchOff" Style="font-size:64px;color:#E0E0E0;margin-bottom:16px;" />
+                <MudText Style="font-size:1.1rem;font-weight:700;color:#9E9E9E;margin-bottom:20px;">Page not found</MudText>
+                <MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary" Style="border-radius:10px;">Back to Dashboard</MudButton>
+            </div>
+        </LayoutView>
+    </NotFound>
+</Router>

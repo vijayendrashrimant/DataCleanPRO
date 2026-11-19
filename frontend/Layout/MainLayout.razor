@@ -1,0 +1,158 @@
+@inherits LayoutComponentBase
+@implements IAsyncDisposable
+@inject NavigationManager Nav
+@inject FastApiService ApiService
+
+<MudThemeProvider Theme="_theme" IsDarkMode="false" />
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudDrawer Open="true" Variant="DrawerVariant.Persistent" Elevation="0"
+               Style="width:230px;background:linear-gradient(180deg,#0d1b6e 0%,#1a237e 55%,#283593 100%);border-right:none;overflow:hidden;">
+
+        <div style="padding:26px 20px 18px;">
+            <div style="display:flex;align-items:center;gap:11px;">
+                <div style="width:40px;height:40px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <MudIcon Icon="@Icons.Material.Filled.AutoFixHigh" Style="color:white;font-size:22px;" />
+                </div>
+                <div>
+                    <div style="color:white;font-weight:800;font-size:1.1rem;line-height:1.1;letter-spacing:-.3px;">DataClean</div>
+                    <div style="color:rgba(255,255,255,.4);font-size:.62rem;font-weight:700;letter-spacing:2.5px;">PRO</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin:0 16px 16px;border-top:1px solid rgba(255,255,255,.08);"></div>
+
+        <div style="padding:0 10px;">
+            <div style="color:rgba(255,255,255,.3);font-size:.62rem;font-weight:700;letter-spacing:1.5px;padding:0 10px 8px;">MAIN MENU</div>
+            <MudNavLink Href="/"          Match="NavLinkMatch.All"    Icon="@Icons.Material.Filled.Dashboard"  Style="color:rgba(255,255,255,.9);border-radius:10px;margin-bottom:2px;font-size:.85rem;font-weight:500;">Dashboard</MudNavLink>
+            <MudNavLink Href="/history"   Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.History"    Style="color:rgba(255,255,255,.9);border-radius:10px;margin-bottom:2px;font-size:.85rem;font-weight:500;">History</MudNavLink>
+            <MudNavLink Href="/analytics" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.BarChart"   Style="color:rgba(255,255,255,.9);border-radius:10px;margin-bottom:2px;font-size:.85rem;font-weight:500;">Analytics</MudNavLink>
+            <MudNavLink Href="/settings"  Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Settings"   Style="color:rgba(255,255,255,.9);border-radius:10px;margin-bottom:2px;font-size:.85rem;font-weight:500;">Settings</MudNavLink>
+        </div>
+
+        <div style="margin:16px 16px;border-top:1px solid rgba(255,255,255,.08);"></div>
+
+        <div style="padding:0 16px;">
+            <div style="color:rgba(255,255,255,.3);font-size:.62rem;font-weight:700;letter-spacing:1.5px;margin-bottom:10px;">SUPPORTED FORMATS</div>
+            @foreach (var f in _formats)
+            {
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                    <div style="display:flex;align-items:center;gap:7px;">
+                        <div style="width:6px;height:6px;border-radius:50%;background:@f.Color;"></div>
+                        <span style="color:rgba(255,255,255,.8);font-size:.75rem;font-weight:600;">@f.Name</span>
+                    </div>
+                    <span style="color:rgba(255,255,255,.35);font-size:.7rem;">@f.Ext</span>
+                </div>
+            }
+        </div>
+
+        <div style="position:absolute;bottom:20px;left:16px;right:16px;">
+            <div style="background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:8px;">
+                <div style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:@(_apiOnline?"#69F0AE":"#FF5252");box-shadow:0 0 6px @(_apiOnline?"rgba(105,240,174,.8)":"rgba(255,82,82,.8)");"></div>
+                <div>
+                    <div style="color:rgba(255,255,255,.8);font-size:.72rem;font-weight:600;">@(_apiOnline?"Engine Online":"Engine Offline")</div>
+                    <div style="color:rgba(255,255,255,.35);font-size:.65rem;">
+                        @(ApiService.IsExeMode ? "exe mode · " : "python mode · ")port 8765
+                    </div>
+                </div>
+            </div>
+        </div>
+    </MudDrawer>
+
+    <MudAppBar Elevation="0" Fixed="true" Style="left:230px;background:white;border-bottom:1px solid #ECEFF1;height:56px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+            <MudIcon Icon="@Icons.Material.Filled.Home" Style="color:#B0BEC5;font-size:16px;" />
+            <MudText Style="color:#B0BEC5;font-size:.8rem;">Home</MudText>
+            <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Style="color:#CFD8DC;font-size:16px;" />
+            <MudText Style="color:#546E7A;font-size:.8rem;font-weight:600;">@_pageTitle</MudText>
+        </div>
+        <MudSpacer />
+        <div style="display:flex;align-items:center;gap:16px;">
+            <div style="display:flex;align-items:center;gap:6px;">
+                <div style="width:7px;height:7px;border-radius:50%;background:@(_apiOnline?"#43A047":"#E53935");"></div>
+                <MudText Style="@($"font-size:.75rem;font-weight:600;color:{(_apiOnline ? "#43A047" : "#E53935")};")">
+                    @(_apiOnline?"API Ready":"API Offline")
+                </MudText>
+            </div>
+            <div style="width:1px;height:22px;background:#ECEFF1;"></div>
+            <MudText Style="font-size:.75rem;color:#90A4AE;">@_now.ToString("ddd dd MMM, HH:mm")</MudText>
+        </div>
+    </MudAppBar>
+
+    <MudMainContent Style="margin-left:230px;padding-top:56px;background:#F5F6FA;min-height:100vh;">
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool     _apiOnline = true;
+    private DateTime _now       = DateTime.Now;
+
+    // Fix #16: shared static client — not recreated per timer tick
+    private static readonly HttpClient _hc = new() { Timeout = TimeSpan.FromSeconds(3) };
+
+    private System.Threading.Timer? _healthTimer;
+    private System.Threading.Timer? _clockTimer;
+
+    // Fix #O: parse AbsolutePath so query strings don't corrupt the title
+    private string _pageTitle => new Uri(Nav.Uri).AbsolutePath.TrimEnd('/').Split('/').Last() switch
+    {
+        "history"   => "History",
+        "analytics" => "Analytics",
+        "settings"  => "Settings",
+        _           => "Data Cleaner",
+    };
+
+    // Fix #7: OnAfterRenderAsync (was sync void — async exceptions were swallowed)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        _apiOnline = ApiService.IsRunning;
+
+        _healthTimer = new System.Threading.Timer(async _ =>
+        {
+            try { var r = await _hc.GetAsync("http://127.0.0.1:8765/health"); _apiOnline = r.IsSuccessStatusCode; }
+            catch { _apiOnline = false; }
+            await InvokeAsync(StateHasChanged);
+        }, null, 0, 8_000);
+
+        _clockTimer = new System.Threading.Timer(async _ =>
+        {
+            _now = DateTime.Now;
+            await InvokeAsync(StateHasChanged);
+        }, null, 30_000, 30_000);
+
+        await Task.CompletedTask;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_healthTimer != null) await _healthTimer.DisposeAsync();
+        if (_clockTimer  != null) await _clockTimer.DisposeAsync();
+    }
+
+    private record FmtInfo(string Name, string Ext, string Color);
+    private readonly FmtInfo[] _formats =
+    {
+        new("CSV",   ".csv",         "#26C6DA"),
+        new("Excel", ".xlsx / .xls", "#66BB6A"),
+        new("TSV",   ".tsv",         "#FFA726"),
+        new("JSON",  ".json",        "#AB47BC"),
+    };
+
+    private readonly MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary="#3949AB", Secondary="#00ACC1", Success="#43A047", Warning="#FB8C00",
+            Error="#E53935", Background="#F5F6FA", Surface="#FFFFFF", DrawerBackground="#1a237e",
+            AppbarBackground="#FFFFFF", AppbarText="#37474F", TextPrimary="#263238", TextSecondary="#78909C",
+        },
+        //Typography = new Typography { Default = new DefaultTypography { FontFamily = ["Inter","Roboto","sans-serif"] } },
+    };
+}

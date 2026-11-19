@@ -1,0 +1,228 @@
+@page "/history"
+@using DataCleanPro.Models
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+@inject IDialogService Dialog
+
+<PageTitle>DataCleanPro — History</PageTitle>
+
+<ApiStatusCheck>
+<div style="padding:28px 32px;">
+
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px;">
+        <div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+                <MudText Style="font-size:1.5rem;font-weight:800;color:#1a237e;line-height:1;">Cleaning History</MudText>
+                <!-- Fix #9: show filtered count, not total -->
+                <div class="step-pill"><MudIcon Icon="@Icons.Material.Filled.History" Style="font-size:12px;" />@_filtered.Count FILES</div>
+            </div>
+            <MudText Style="color:#78909C;font-size:.88rem;">Every file you have cleaned, with full change reports and quality scores.</MudText>
+        </div>
+        <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small"
+                   StartIcon="@Icons.Material.Filled.DeleteSweep" OnClick="ClearAllAsync"
+                   Disabled="@(_entries.Count == 0)" Style="border-radius:8px;font-weight:600;">Clear All</MudButton>
+    </div>
+
+    @if (_loading)
+    {
+        <div style="display:flex;justify-content:center;padding:80px 0;">
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+        </div>
+    }
+    else if (_fetchError != null)
+    {
+        <MudPaper Elevation="0" Style="border-radius:16px;border:1px solid #FFEBEE;background:#FFF5F5;padding:40px 32px;text-align:center;">
+            <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" Style="font-size:64px;color:#E53935;margin-bottom:16px;" />
+            <MudText Style="font-size:1.1rem;font-weight:700;color:#C62828;margin-bottom:8px;">Could not load history</MudText>
+            <MudText Style="font-size:.85rem;color:#E57373;max-width:400px;margin:0 auto 20px;">@_fetchError</MudText>
+            <MudButton OnClick="LoadAsync" Variant="Variant.Filled" Color="Color.Error" Style="border-radius:10px;font-weight:600;">Retry</MudButton>
+        </MudPaper>
+    }
+    else if (_entries.Count == 0)
+    {
+        <MudPaper Elevation="0" Style="border-radius:16px;border:1px solid #E8EAF6;background:white;padding:80px 32px;text-align:center;">
+            <MudIcon Icon="@Icons.Material.Filled.History" Style="font-size:64px;color:#E0E0E0;margin-bottom:16px;" />
+            <MudText Style="font-size:1.1rem;font-weight:700;color:#9E9E9E;margin-bottom:8px;">No history yet</MudText>
+            <MudText Style="font-size:.85rem;color:#BDBDBD;">Clean a file on the Dashboard and it will appear here.</MudText>
+            <MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary" Style="margin-top:24px;border-radius:10px;font-weight:600;">Go to Dashboard</MudButton>
+        </MudPaper>
+    }
+    else
+    {
+        <MudPaper Elevation="0" Style="border-radius:12px;border:1px solid #E8EAF6;background:white;padding:16px 20px;margin-bottom:16px;">
+            <MudGrid Spacing="2" AlignItems="Center">
+                <MudItem xs="12" sm="5">
+                        <MudTextField T="string" Value="_search" ValueChanged="@((string v) => { _search = v; Refilter(); })" Placeholder="Search by filename…"
+                                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense"
+                                      Clearable="true" />
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudSelect Value="_filterFormat" ValueChanged="@((string v) => { _filterFormat = v; Refilter(); })"
+                               Label="Format" Variant="Variant.Outlined" Margin="Margin.Dense">
+                        <MudSelectItem Value="@("")">All formats</MudSelectItem>
+                        <MudSelectItem Value="@("csv")">CSV</MudSelectItem>
+                        <MudSelectItem Value="@("xlsx")">Excel</MudSelectItem>
+                        <MudSelectItem Value="@("tsv")">TSV</MudSelectItem>
+                        <MudSelectItem Value="@("json")">JSON</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudSelect Value="_filterScore" ValueChanged="@((string v) => { _filterScore = v; Refilter(); })"
+                               Label="Quality" Variant="Variant.Outlined" Margin="Margin.Dense">
+                        <MudSelectItem Value="@("")">All scores</MudSelectItem>
+                        <MudSelectItem Value="@("excellent")">Excellent (90+)</MudSelectItem>
+                        <MudSelectItem Value="@("good")">Good (70–89)</MudSelectItem>
+                        <MudSelectItem Value="@("poor")">Poor (&lt;70)</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" sm="1">
+                    <MudText Style="font-size:.78rem;color:#9E9E9E;">@_filtered.Count result(s)</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        <div style="display:flex;flex-direction:column;gap:10px;">
+            <!-- Fix #M: iterate _filtered (materialised list) not a recomputed IEnumerable -->
+            @foreach (var e in _filtered)
+            {
+                var sc = e.QualityScore;
+                var scColor = sc>=90?"#43A047":sc>=70?"#FB8C00":"#E53935";
+                var scBg    = sc>=90?"#E8F5E9":sc>=70?"#FFF3E0":"#FFEBEE";
+                var ext     = e.Filename.Contains('.') ? e.Filename.Split('.')[^1].ToUpper() : "FILE";
+                var (eb,ec) = ext switch { "CSV"=>("#E3F2FD","#1565C0"),"XLSX"=>("#E8F5E9","#2E7D32"),"XLS"=>("#E8F5E9","#2E7D32"),"TSV"=>("#FFF3E0","#E65100"),"JSON"=>("#F3E5F5","#6A1B9A"),_=>("#F5F5F5","#616161") };
+                <MudPaper Elevation="0" Style="border-radius:14px;border:1px solid #E8EAF6;background:white;padding:18px 22px;">
+                    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+                        <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:200px;">
+                            <div style="width:44px;height:44px;border-radius:12px;flex-shrink:0;background:@eb;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;">
+                                    <MudIcon Icon="@Icons.Material.Filled.InsertDriveFile" Style=$"font-size:18px;color:{ec};" />
+                                <span style="font-size:.52rem;font-weight:800;color:@ec;letter-spacing:.5px;">@ext</span>
+                            </div>
+                            <div>
+                                <MudText Style="font-weight:700;font-size:.9rem;color:#263238;word-break:break-all;">@e.Filename</MudText>
+                                <MudText Style="font-size:.72rem;color:#9E9E9E;">@FormatDate(e.CleanedAt) &nbsp;·&nbsp; @e.FileSizeKb KB</MudText>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+                            <StatPill Label="Rows in"  Value="@e.OriginalRows.ToString("N0")" Color="#3949AB" />
+                            <StatPill Label="Rows out" Value="@e.CleanedRows.ToString("N0")"  Color="#43A047" />
+                            <StatPill Label="Changes"  Value="@e.Changes.ToString()"          Color="#F4511E" />
+                            <div style="text-align:center;">
+                                <div style="font-size:.65rem;color:#9E9E9E;font-weight:600;letter-spacing:.4px;margin-bottom:2px;">QUALITY</div>
+                                <div style="background:@scBg;color:@scColor;border-radius:8px;padding:3px 10px;font-weight:800;font-size:.85rem;">@sc</div>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:6px;margin-left:auto;">
+                            <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Primary" Size="Size.Small"
+                                           Title="View report" OnClick="@(() => _expandedId = _expandedId==e.Id?"":e.Id)" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                                           Title="Delete" OnClick="@(() => DeleteAsync(e.Id))" />
+                        </div>
+                    </div>
+                    @if (_expandedId == e.Id)
+                    {
+                        <div style="margin-top:14px;padding-top:14px;border-top:1px solid #F5F6FA;">
+                            <MudText Style="font-size:.72rem;font-weight:700;color:#3949AB;letter-spacing:.5px;margin-bottom:8px;">CLEANING REPORT</MudText>
+                            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
+                                @foreach (var r in e.Report) { <span style="padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:600;background:#EEF0FF;color:#3949AB;">@GetTitle(r.Type)</span> }
+                            </div>
+                            @foreach (var r in e.Report) { <MudText Style="font-size:.75rem;color:#78909C;">• @r.Detail</MudText> }
+                        </div>
+                    }
+                </MudPaper>
+            }
+        </div>
+    }
+</div>
+</ApiStatusCheck>
+
+@code {
+    private List<HistoryEntry> _entries  = new();
+    private List<HistoryEntry> _filtered = new();   // Fix #M: materialised, not recomputed per render
+    private bool   _loading       = true;
+    private string _search        = "";
+    private string _filterFormat  = "";
+    private string _filterScore   = "";
+    private string _expandedId    = "";
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private string? _fetchError;
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _fetchError = null;
+        try
+        {
+            var resp = await Http.GetAsync("history");
+            if (resp.IsSuccessStatusCode)
+                _entries = await resp.Content.ReadFromJsonAsync<List<HistoryEntry>>() ?? new();
+            else
+            {
+                _fetchError = $"API error {(int)resp.StatusCode} — is FastAPI running on port 8765?";
+                _entries = new();
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            _fetchError = $"Could not reach API: {ex.Message}";
+            _entries = new();
+        }
+        catch { _entries = new(); }
+        finally { _loading = false; Refilter(); }
+    }
+
+    // Fix #M: materialise once on filter change; iterate _filtered in template
+    private void Refilter()
+    {
+        _filtered = _entries.Where(e =>
+        {
+            if (!string.IsNullOrEmpty(_search) &&
+                !e.Filename.Contains(_search, StringComparison.OrdinalIgnoreCase)) return false;
+            if (!string.IsNullOrEmpty(_filterFormat))
+            {
+                var ext = e.Filename.Contains('.') ? e.Filename.Split('.')[^1].ToLower() : "";
+                if (_filterFormat == "xlsx" && ext is not "xlsx" and not "xls") return false;
+                if (_filterFormat != "xlsx" && ext != _filterFormat) return false;
+            }
+            if (!string.IsNullOrEmpty(_filterScore))
+            {
+                if (_filterScore == "excellent" && e.QualityScore < 90)  return false;
+                if (_filterScore == "good"      && (e.QualityScore < 70 || e.QualityScore >= 90)) return false;
+                if (_filterScore == "poor"      && e.QualityScore >= 70) return false;
+            }
+            return true;
+        }).ToList();
+    }
+
+    private async Task DeleteAsync(string id)
+    {
+        await Http.DeleteAsync($"history/{id}");
+        _entries.RemoveAll(e => e.Id == id);
+        Refilter();
+        Snackbar.Add("Entry removed", Severity.Info);
+    }
+
+    private async Task ClearAllAsync()
+    {
+        var ok = await Dialog.ShowMessageBox("Clear history",
+            "Remove all entries? This cannot be undone.", yesText: "Clear all", cancelText: "Cancel");
+        if (ok != true) return;
+        await Http.DeleteAsync("history");
+        _entries.Clear(); Refilter();
+        Snackbar.Add("History cleared", Severity.Success);
+    }
+
+    private static string FormatDate(string iso) =>
+        DateTime.TryParse(iso, out var d) ? d.ToLocalTime().ToString("dd MMM yyyy, HH:mm") : iso;
+
+    private static string GetTitle(string t) => t switch
+    {
+        "duplicates"    => "Duplicates Removed",   "empty_rows"    => "Empty Rows Dropped",
+        "empty_cols"    => "Empty Columns Dropped", "null_fill"     => "Nulls Filled",
+        "whitespace"    => "Whitespace Normalised", "casing"        => "Casing Fixed",
+        "column_rename" => "Column Names Cleaned",  "no_changes"    => "No Issues Found",
+        _ => "Fixed",
+    };
+}

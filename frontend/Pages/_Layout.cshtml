@@ -1,0 +1,82 @@
+@using Microsoft.AspNetCore.Components.Web
+@namespace DataCleanPro.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DataCleanPro — Smart Data Cleaning</title>
+    <base href="~/" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+    <style>
+        #loading-overlay {
+            position:fixed;inset:0;z-index:9999;
+            background:linear-gradient(135deg,#0d1b6e 0%,#3949AB 100%);
+            display:flex;flex-direction:column;align-items:center;justify-content:center;
+            transition:opacity .4s ease;
+        }
+        #loading-overlay.fade-out{opacity:0;pointer-events:none;}
+        .lo-logo{width:72px;height:72px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:20px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;animation:popIn .5s cubic-bezier(.34,1.56,.64,1) forwards;}
+        @@keyframes popIn{from{opacity:0;transform:scale(.5);}to{opacity:1;transform:scale(1);}}
+        .lo-title{color:white;font-family:Inter,sans-serif;font-size:1.7rem;font-weight:800;letter-spacing:-.5px;margin-bottom:6px;}
+        .lo-sub{color:rgba(255,255,255,.5);font-family:Inter,sans-serif;font-size:.8rem;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:36px;}
+        .lo-bar{width:200px;height:3px;background:rgba(255,255,255,.15);border-radius:2px;overflow:hidden;}
+        .lo-bar-fill{height:100%;background:white;border-radius:2px;animation:barFill 2s ease-in-out forwards;}
+        @@keyframes barFill{0%{width:0;}40%{width:55%;}80%{width:85%;}100%{width:85%;}}
+    </style>
+</head>
+<body>
+    <div id="loading-overlay">
+        <div class="lo-logo">
+            <svg width="38" height="38" viewBox="0 0 24 24" fill="white">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+            </svg>
+        </div>
+        <div class="lo-title">DataClean<span style="opacity:.4;font-weight:300">Pro</span></div>
+        <div class="lo-sub">Smart Data Cleaning Engine</div>
+        <div class="lo-bar"><div class="lo-bar-fill"></div></div>
+    </div>
+
+    @RenderBody()
+
+    <div id="blazor-error-ui">
+        <span>An unhandled error has occurred.</span>
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+
+    <%-- Fix #C: autostart="false" makes Blazor.start() below the intentional trigger --%>
+    <script src="_framework/blazor.server.js" autostart="false"></script>
+
+    <script>
+        // Fix #18: requestAnimationFrame ensures overlay hides after first render frame,
+        // not just when JS loads. Blazor.start() is explicit because we set autostart=false.
+        Blazor.start().then(() => {
+            requestAnimationFrame(() => {
+                const el = document.getElementById('loading-overlay');
+                if (el) {
+                    el.classList.add('fade-out');
+                    setTimeout(() => el.remove(), 450);
+                }
+            });
+        });
+
+        // Trigger file download from base64
+        window.downloadFile = (base64, filename) => {
+            const a = document.createElement('a');
+            a.href = 'data:application/octet-stream;base64,' + base64;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        };
+    </script>
+</body>
+</html>

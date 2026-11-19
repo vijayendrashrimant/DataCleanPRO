@@ -1,0 +1,94 @@
+@inject FastApiService ApiService
+@inject HttpClient Http
+@implements IDisposable
+
+@if (_ready)
+{
+    @ChildContent
+}
+else if (_error != null)
+{
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;padding:40px;text-align:center;">
+        <div style="width:72px;height:72px;background:#FBE9E7;border-radius:18px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+            <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" Style="font-size:36px;color:#F4511E;" />
+        </div>
+        <MudText Style="font-size:1.2rem;font-weight:800;color:#1a237e;margin-bottom:8px;">Engine Unavailable</MudText>
+        <MudText Style="font-size:.85rem;color:#78909C;max-width:460px;line-height:1.6;margin-bottom:8px;">@_error</MudText>
+        <MudText Style="font-size:.78rem;color:#B0BEC5;margin-bottom:24px;">Make sure the Python venv is set up, then restart the application.</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="StartRetry"
+                   StartIcon="@Icons.Material.Filled.Refresh" Style="border-radius:10px;font-weight:600;">
+            Retry Connection
+        </MudButton>
+    </div>
+}
+else
+{
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;padding:40px;text-align:center;">
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" Style="margin-bottom:24px;" />
+        <MudText Style="font-size:1rem;font-weight:700;color:#1a237e;margin-bottom:6px;">Starting cleaning engine…</MudText>
+        <MudText Style="font-size:.82rem;color:#9E9E9E;">Python / uvicorn is warming up on port 8765</MudText>
+    </div>
+}
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private bool    _ready;
+    private string? _error;
+
+    // Fix #5 #6: CancellationTokenSource replaces raw Timer + shared int
+    private CancellationTokenSource _cts = new();
+
+    protected override void OnInitialized()
+    {
+        if (ApiService.IsRunning) { _ready = true; return; }
+        if (ApiService.StartupError != null) { _error = ApiService.StartupError; return; }
+        _ = PollAsync(_cts.Token, timeoutMs: 30_000);
+    }
+
+    // Fix #6: cancel old poll before starting new one — no concurrent timers
+    private void StartRetry()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+        _cts   = new CancellationTokenSource();
+        _error = null;
+        StateHasChanged();
+        _ = PollAsync(_cts.Token, timeoutMs: 15_000);
+    }
+
+    // Fix #5: Task.Delay loop — no shared mutable int, no threadpool race
+    private async Task PollAsync(CancellationToken ct, int timeoutMs)
+    {
+        var elapsed = 0;
+        while (elapsed < timeoutMs && !ct.IsCancellationRequested)
+        {
+            try
+            {
+                var r = await Http.GetAsync("health", ct);
+                if (r.IsSuccessStatusCode) { _ready = true; await InvokeAsync(StateHasChanged); return; }
+            }
+            catch (OperationCanceledException) { return; }
+            catch { /* not ready yet */ }
+
+            // Surface StartupError if service flagged it during background init
+            if (ApiService.StartupError != null)
+            {
+                _error = ApiService.StartupError;
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+
+            await Task.Delay(500, ct).ConfigureAwait(false);
+            elapsed += 500;
+        }
+
+        if (!ct.IsCancellationRequested)
+        {
+            _error = $"API did not respond within {timeoutMs / 1000}s. Check port 8765.";
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose() { _cts.Cancel(); _cts.Dispose(); }
+}

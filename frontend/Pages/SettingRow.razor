@@ -1,0 +1,12 @@
+<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;">
+    <div style="flex:1;">
+        <MudText Style="font-size:.85rem;font-weight:600;color:#263238;">@Label</MudText>
+        <MudText Style="font-size:.75rem;color:#9E9E9E;margin-top:1px;">@Description</MudText>
+    </div>
+    <div style="flex-shrink:0;">@ChildContent</div>
+</div>
+@code {
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public string Description { get; set; } = "";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

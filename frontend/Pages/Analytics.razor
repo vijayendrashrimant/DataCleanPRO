@@ -1,0 +1,251 @@
+@page "/analytics"
+@using DataCleanPro.Models
+@inject HttpClient Http
+
+<PageTitle>DataCleanPro — Analytics</PageTitle>
+
+<ApiStatusCheck>
+<div style="padding:28px 32px;">
+
+    <div style="margin-bottom:28px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+            <MudText Style="font-size:1.5rem;font-weight:800;color:#1a237e;line-height:1;">Analytics</MudText>
+            <div class="step-pill"><MudIcon Icon="@Icons.Material.Filled.BarChart" Style="font-size:12px;" />INSIGHTS</div>
+        </div>
+        <MudText Style="color:#78909C;font-size:.88rem;">Aggregated statistics across all your cleaning sessions.</MudText>
+    </div>
+
+    @if (_loading)
+    {
+        <div style="display:flex;justify-content:center;padding:80px 0;">
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+        </div>
+    }
+    else if (_fetchError != null)
+    {
+        <MudPaper Elevation="0" Style="border-radius:16px;border:1px solid #FFEBEE;background:#FFF5F5;padding:40px 32px;text-align:center;">
+            <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" Style="font-size:64px;color:#E53935;margin-bottom:16px;" />
+            <MudText Style="font-size:1.1rem;font-weight:700;color:#C62828;margin-bottom:8px;">Could not load analytics</MudText>
+            <MudText Style="font-size:.85rem;color:#E57373;max-width:400px;margin:0 auto 20px;">@_fetchError</MudText>
+            <MudButton OnClick="@(async () => { _loading=true; _fetchError=null; StateHasChanged(); await OnInitializedAsync(); })"
+                       Variant="Variant.Filled" Color="Color.Error" Style="border-radius:10px;font-weight:600;">
+                Retry
+            </MudButton>
+        </MudPaper>
+    }
+    else if (_data == null || _data.TotalFiles == 0)
+    {
+        <MudPaper Elevation="0" Style="border-radius:16px;border:1px solid #E8EAF6;background:white;padding:80px 32px;text-align:center;">
+            <MudIcon Icon="@Icons.Material.Filled.BarChart" Style="font-size:64px;color:#E0E0E0;margin-bottom:16px;" />
+            <MudText Style="font-size:1.1rem;font-weight:700;color:#9E9E9E;margin-bottom:8px;">No data yet</MudText>
+            <MudText Style="font-size:.85rem;color:#BDBDBD;">Clean some files and analytics will appear here automatically.</MudText>
+            <MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary" Style="margin-top:24px;border-radius:10px;font-weight:600;">Go to Dashboard</MudButton>
+        </MudPaper>
+    }
+    else
+    {
+        <MudGrid Spacing="3" Style="margin-bottom:24px;">
+            @foreach (var k in _kpis)
+            {
+                <MudItem xs="6" sm="3">
+                    <div class="stat-card" style="border-color:@k.Color;">
+                        <div class="stat-icon" style="background:@k.Bg;"><MudIcon Icon="@k.Icon" Style=$"color:{k.Color};" /></div>
+                        <div>
+                            <MudText Style=$"font-size:1.35rem;font-weight:800;color:@k.Color;line-height:1.1;">@k.Value</MudText>
+                            <MudText Style=$"font-size:.72rem;color:{k.Color};font-weight:500;">@k.Label</MudText>
+                        </div>
+                    </div>
+                </MudItem>
+            }
+        </MudGrid>
+
+        <MudGrid Spacing="3">
+            <MudItem xs="12" md="8">
+                <MudPaper Elevation="0" Style="border-radius:16px;border:1px solid #E8EAF6;background:white;padding:24px;">
+                    <div class="section-header">
+                        <div class="section-badge" style="background:#3949AB;"></div>
+                        <div><MudText Style="font-weight:700;font-size:.95rem;color:#1a237e;">Files Cleaned — Last 14 Days</MudText><MudText Style="font-size:.72rem;color:#9E9E9E;">Daily cleaning activity</MudText></div>
+                    </div>
+                    <div style="display:flex;align-items:flex-end;gap:6px;height:140px;padding-top:10px;">
+                        @{ var mx = Math.Max(1, _data.FilesByDay.Max(d => d.Count)); }
+                        <!-- Fix #N: use for-loop index to avoid O(n²) IndexOf -->
+                        @for (int i = 0; i < _data.FilesByDay.Count; i++)
+                        {
+                            var day   = _data.FilesByDay[i];
+                            var pct   = day.Count * 100.0 / mx;
+                            var today = day.Date == DateTime.UtcNow.ToString("yyyy-MM-dd");
+                            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;">
+                                <MudTooltip Text="@($"{day.Date}: {day.Count} file(s)")">
+                                    <div style="width:100%;border-radius:4px 4px 0 0;min-height:3px;background:@(today?"#3949AB":"#C5CAE9");height:@(pct)%;transition:height .3s;"></div>
+                                </MudTooltip>
+                                @if (i % 3 == 0) { <span style="font-size:.55rem;color:#9E9E9E;white-space:nowrap;transform:rotate(-30deg);">@day.Date[5..]</span> }
+                                else { <span style="height:14px;"></span> }
+                            </div>
+                        }
+                    </div>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudPaper Elevation="0" Style="border-radius:16px;border:1px solid #E8EAF6;background:white;padding:24px;height:100%;">
+                    <div class="section-header">
+                        <div class="section-badge" style="background:#43A047;"></div>
+                        <div><MudText Style="font-weight:700;font-size:.95rem;color:#1a237e;">Quality Distribution</MudText><MudText Style="font-size:.72rem;color:#9E9E9E;">Original data quality on arrival</MudText></div>
+                    </div>
+                    @{ var tot = Math.Max(1, _data.TotalFiles); }
+                    @foreach (var (lbl, cnt, col) in new[]
+                    {
+                        ("Excellent (90–100)", _data.QualityDistribution.Excellent, "#43A047"),
+                        ("Good (70–89)",       _data.QualityDistribution.Good,      "#FB8C00"),
+                        ("Poor (<70)",         _data.QualityDistribution.Poor,      "#E53935"),
+                    })
+                    {
+                        var pct = (int)Math.Round(cnt * 100.0 / tot);
+                        <div style="margin-bottom:16px;">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+                                <MudText Style="font-size:.78rem;font-weight:600;color:#455A64;">@lbl</MudText>
+                                <MudText Style=$"font-size:.78rem;font-weight:700;color:{col};">@cnt <span style="opacity:.5;font-weight:400;">(@pct%)</span></MudText>
+                            </div>
+                            <div style="height:8px;border-radius:4px;background:#F5F6FA;overflow:hidden;">
+                                <div style="height:100%;border-radius:4px;background:@col;width:@(pct)%;transition:width .4s;"></div>
+                            </div>
+                        </div>
+                    }
+                    <div style="margin-top:20px;background:linear-gradient(135deg,#E8EAF6,#EDE7F6);border-radius:12px;padding:14px;text-align:center;">
+                        <MudText Style="font-size:.68rem;font-weight:700;color:#5C6BC0;letter-spacing:.5px;margin-bottom:4px;">AVERAGE QUALITY SCORE</MudText>
+                        <MudText Style="font-size:2rem;font-weight:800;color:#3949AB;line-height:1.1;">@_data.AvgQualityScore<span style="font-size:1rem;opacity:.5;">/100</span></MudText>
+                    </div>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="5">
+                <MudPaper Elevation="0" Style="border-radius:16px;border:1px solid #E8EAF6;background:white;padding:24px;">
+                    <div class="section-header">
+                        <div class="section-badge" style="background:#F4511E;"></div>
+                        <div><MudText Style="font-weight:700;font-size:.95rem;color:#1a237e;">Most Common Issues</MudText><MudText Style="font-size:.72rem;color:#9E9E9E;">Across all cleaned files</MudText></div>
+                    </div>
+                    @{ var mxI = Math.Max(1, _data.MostCommonIssues.Count > 0 ? _data.MostCommonIssues.Max(i => i.Count) : 1); }
+                    @foreach (var iss in _data.MostCommonIssues)
+                    {
+                        var pct = (int)Math.Round(iss.Count * 100.0 / mxI);
+                        var (icon, color, bg) = GetIssueStyle(iss.Type);
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                            <div style="width:32px;height:32px;border-radius:8px;flex-shrink:0;background:@bg;display:flex;align-items:center;justify-content:center;">
+                                <MudIcon Icon="@icon" Style=$"font-size:15px;color:{color};" />
+                            </div>
+                            <div style="flex:1;">
+                                <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                                    <MudText Style="font-size:.78rem;font-weight:600;color:#263238;">@GetTitle(iss.Type)</MudText>
+                                    <MudText Style=$"font-size:.78rem;font-weight:700;color:{color};">@iss.Count×</MudText>
+                                </div>
+                                <div style="height:5px;border-radius:3px;background:#F5F6FA;overflow:hidden;">
+                                    <div style="height:100%;border-radius:3px;background:@color;width:@(pct)%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="7">
+                <MudGrid Spacing="3">
+                    <MudItem xs="12">
+                        <MudPaper Elevation="0" Style="border-radius:16px;border:1px solid #E8EAF6;background:white;padding:24px;">
+                            <div class="section-header">
+                                <div class="section-badge" style="background:#8E24AA;"></div>
+                                <div><MudText Style="font-weight:700;font-size:.95rem;color:#1a237e;">File Format Breakdown</MudText></div>
+                            </div>
+                            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                                @{ var fTot = Math.Max(1, _data.FormatBreakdown.Sum(f => f.Count)); }
+                                @foreach (var fmt in _data.FormatBreakdown)
+                                {
+                                    var pct = (int)Math.Round(fmt.Count * 100.0 / fTot);
+                                    var (fb,fc) = fmt.Format switch { "CSV"=>("#E3F2FD","#1565C0"),"XLSX"or"XLS"=>("#E8F5E9","#2E7D32"),"TSV"=>("#FFF3E0","#E65100"),"JSON"=>("#F3E5F5","#6A1B9A"),_=>("#F5F5F5","#616161") };
+                                    <div style="flex:1;min-width:80px;text-align:center;padding:16px 12px;border-radius:12px;background:@fb;">
+                                        <div style="font-size:1.3rem;font-weight:800;color:@fc;">@fmt.Count</div>
+                                        <div style="font-size:.7rem;font-weight:700;color:@fc;letter-spacing:.5px;margin-top:2px;">@fmt.Format</div>
+                                        <div style="font-size:.68rem;color:@fc;opacity:.6;">@pct%</div>
+                                    </div>
+                                }
+                            </div>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudPaper Elevation="0" Style="border-radius:16px;border:1px solid #E8EAF6;background:white;padding:24px;">
+                            <div class="section-header">
+                                <div class="section-badge" style="background:#00ACC1;"></div>
+                                <div><MudText Style="font-weight:700;font-size:.95rem;color:#1a237e;">Rows Cleaned — Last 14 Days</MudText></div>
+                            </div>
+                            <div style="display:flex;align-items:flex-end;gap:6px;height:100px;">
+                                @{ var mxR = Math.Max(1, _data.RowsOverTime.Max(r => r.Rows)); }
+                                @foreach (var day in _data.RowsOverTime)
+                                {
+                                    <MudTooltip Text="@($"{day.Date}: {day.Rows:N0} rows")">
+                                        <div style="flex:1;border-radius:3px 3px 0 0;min-height:3px;background:#B2EBF2;height:@(day.Rows*100.0/mxR)%;transition:height .3s;"></div>
+                                    </MudTooltip>
+                                }
+                            </div>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            </MudItem>
+        </MudGrid>
+    }
+</div>
+</ApiStatusCheck>
+
+@code {
+    private AnalyticsResponse? _data;
+    private bool _loading = true;
+
+    private string? _fetchError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var resp = await Http.GetAsync("analytics");
+            if (resp.IsSuccessStatusCode)
+                _data = await resp.Content.ReadFromJsonAsync<AnalyticsResponse>();
+            else
+                _fetchError = $"API error {(int)resp.StatusCode} — is FastAPI running on port 8765?";
+        }
+        catch (HttpRequestException ex)
+        {
+            _fetchError = $"Could not reach API: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _fetchError = $"Unexpected error: {ex.Message}";
+        }
+        finally { _loading = false; }
+    }
+
+    private record KpiInfo(string Icon, string Color, string Bg, string Label, string Value);
+    private IEnumerable<KpiInfo> _kpis => _data == null ? [] : new KpiInfo[]
+    {
+        new(Icons.Material.Filled.FolderOpen,  "#3949AB","#EEF0FF","Files Cleaned",    _data.TotalFiles.ToString("N0")),
+        new(Icons.Material.Filled.TableRows,   "#43A047","#E8F5E9","Rows Processed",   _data.TotalRowsCleaned.ToString("N0")),
+        new(Icons.Material.Filled.Delete,      "#F4511E","#FBE9E7","Rows Removed",     _data.TotalRowsRemoved.ToString("N0")),
+        new(Icons.Material.Filled.AutoFixHigh, "#8E24AA","#F3E5F5","Avg Changes/File", _data.AvgChangesPerFile.ToString("F1")),
+    };
+
+    private static (string i, string c, string b) GetIssueStyle(string t) => t switch
+    {
+        "duplicates"    => (Icons.Material.Filled.ContentCopy,           "#F4511E","#FBE9E7"),
+        "empty_rows"    => (Icons.Material.Filled.TableRows,             "#E53935","#FFEBEE"),
+        "empty_cols"    => (Icons.Material.Filled.ViewColumn,            "#E53935","#FFEBEE"),
+        "null_fill"     => (Icons.Material.Filled.FiberManualRecord,     "#8E24AA","#F3E5F5"),
+        "whitespace"    => (Icons.Material.Filled.SpaceBar,              "#1565C0","#E3F2FD"),
+        "casing"        => (Icons.Material.Filled.TextFields,            "#2E7D32","#E8F5E9"),
+        "column_rename" => (Icons.Material.Filled.DriveFileRenameOutline,"#FB8C00","#FFF3E0"),
+        _               => (Icons.Material.Filled.Build,                 "#3949AB","#EEF0FF"),
+    };
+
+    private static string GetTitle(string t) => t switch
+    {
+        "duplicates"=>"Duplicate Rows","empty_rows"=>"Empty Rows","empty_cols"=>"Empty Columns",
+        "null_fill"=>"Null Values","whitespace"=>"Whitespace Issues","casing"=>"Inconsistent Casing",
+        "column_rename"=>"Column Name Spaces",_=>t,
+    };
+}
