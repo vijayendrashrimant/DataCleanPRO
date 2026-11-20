@@ -1,5 +1,7 @@
 # DataCleanPro
 
+
+
 [Features](#features) | [How it works](#how-it-works) | [Install](#install)
 
 **Open Source · MIT License**
@@ -14,6 +16,8 @@ Upload CSV, Excel, TSV or JSON — DataCleanPro automatically detects and fixes 
 
 ---
 
+<img width="2400" height="1200" alt="screenshot-dashboard" src="https://github.com/vijayendrashrimant/DataCleanPRO/blob/main/screenshot-dashboard.png" />
+
 ## DataCleanPro Dashboard
 
 - Dashboard
@@ -24,6 +28,8 @@ Upload CSV, Excel, TSV or JSON — DataCleanPro automatically detects and fixes 
 **Engine Status:** Online · EXE Mode
 
 ### Data Cleaner
+
+
 
 Upload your file to start cleaning.
 
@@ -50,6 +56,8 @@ Upload your file to start cleaning.
 <a id="features"></a>
 
 ## Features
+
+<img width="2400" height="1200" alt="screenshot-dashboard" src="https://github.com/vijayendrashrimant/DataCleanPRO/blob/main/screenshot-analytics.png" />
 
 ### Everything you need to clean data
 
@@ -104,6 +112,8 @@ Every operation is applied in order, and each change is recorded in the cleaning
 <a id="how-it-works"></a>
 
 ## How It Works
+
+<img width="2400" height="1200" alt="screenshot-dashboard" src="https://github.com/vijayendrashrimant/DataCleanPRO/blob/main/diagram-how-it-works.png" />
 
 ### Four steps from dirty to clean
 
@@ -189,6 +199,8 @@ Every page communicates with the FastAPI engine running silently in the backgrou
 ---
 
 ## What's New in v1.0.0
+
+<img width="2400" height="1200" alt="screenshot-dashboard" src="https://github.com/vijayendrashrimant/DataCleanPRO/blob/main/diagram-architecture.png" />
 
 - Blazor Server web app
 - Instant load without WebAssembly download
